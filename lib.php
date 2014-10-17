@@ -72,7 +72,15 @@ function tquiz_add_instance(stdClass $tquiz, mod_tquiz_mod_form $mform = null) {
     $tquiz->timecreated = time();
 
     # You may have to add extra stuff in here #
-
+	$itemid=0;
+	$cmid = $tquiz->coursemodule;
+	$modulecontext = context_module::instance($cmid);
+	$editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES,
+               'noclean' => true, 'context' => $modulecontext, 'subdirs' => true);
+	$tquiz = file_postupdate_standard_editor( $tquiz, 'feedback', $editoroptions, $modulecontext,
+                                        'mod_tquiz', null, $itemid);
+	
+	
     return $DB->insert_record('tquiz', $tquiz);
 }
 

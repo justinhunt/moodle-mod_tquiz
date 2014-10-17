@@ -60,6 +60,17 @@ class mod_tquiz_mod_form extends moodleform_mod {
         // Adding the standard "intro" and "introformat" fields
         $this->add_intro_editor();
 
+		
+		//Add a feedback form
+		$edfield = 'feedback';
+		$editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES,
+               'noclean' => true, 'context' => $this->context, 'subdirs' => true);
+		$editorname= $edfield . '_editor';
+        $mform->addElement('editor', $editorname, get_string($edfield, 'tquiz'),array('rows' => 10),$editoroptions);
+        $mform->setType($editorname, PARAM_RAW);
+		$mform->addRule($editorname, get_string('required'), 'required', null, 'client');
+
+		
         //-------------------------------------------------------------------------------
         // Adding the rest of tquiz settings, spreeading all them into this fieldset
         // or adding more fieldsets ('header' elements) if needed for better logic

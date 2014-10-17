@@ -43,5 +43,6 @@ $string['someadminsetting_details'] = 'More info about Some Admin Setting';
 $string['someinstancesetting'] = 'Some Instance Setting';
 $string['someinstancesetting_details'] = 'More infor about Some Instance Setting';
 $string['tquizsettings'] = 'tquiz settings';
+$string['feedback'] = 'Feedback';
 $string['tquiz:addinstance'] = 'Add a new tquiz';
 $string['tquiz:view'] = 'View tquiz';
