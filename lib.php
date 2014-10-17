@@ -39,6 +39,18 @@ defined('MOODLE_INTERNAL') || die();
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Get editor option for forms
+ *
+ * @param object context
+ * @return array editoroptions 
+ */
+function tquiz_fetch_editor_options($context) {
+	return array('maxfiles' => EDITOR_UNLIMITED_FILES,
+               'noclean' => true, 'context' => $context, 'subdirs' => true);
+
+}
+
+/**
  * Returns the information on whether the module supports a feature
  *
  * @see plugin_supports() in lib/moodlelib.php
@@ -75,11 +87,10 @@ function tquiz_add_instance(stdClass $tquiz, mod_tquiz_mod_form $mform = null) {
 	$itemid=0;
 	$cmid = $tquiz->coursemodule;
 	$modulecontext = context_module::instance($cmid);
-	$editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES,
-               'noclean' => true, 'context' => $modulecontext, 'subdirs' => true);
+	$editoroptions = tquiz_fetch_editor_options($modulecontext);
 	$tquiz = file_postupdate_standard_editor( $tquiz, 'feedback', $editoroptions, $modulecontext,
-                                        'mod_tquiz', null, $itemid);
-	
+                                        'mod_tquiz', 'feedback', $itemid);
+
 	
     return $DB->insert_record('tquiz', $tquiz);
 }
@@ -102,6 +113,13 @@ function tquiz_update_instance(stdClass $tquiz, mod_tquiz_mod_form $mform = null
     $tquiz->id = $tquiz->instance;
 
     # You may have to add extra stuff in here #
+    $itemid=0;
+	$cmid = $tquiz->coursemodule;
+	$modulecontext = context_module::instance($cmid);
+	$editoroptions = tquiz_fetch_editor_options($modulecontext);
+	$tquiz = file_postupdate_standard_editor( $tquiz, 'feedback', $editoroptions, $modulecontext,
+                                        'mod_tquiz', 'feedback', $itemid);
+
 
     return $DB->update_record('tquiz', $tquiz);
 }
@@ -323,7 +341,7 @@ function tquiz_update_grades(stdClass $tquiz, $userid = 0) {
  * @return array of [(string)filearea] => (string)description
  */
 function tquiz_get_file_areas($course, $cm, $context) {
-    return array();
+    return array('feedback');
 }
 
 /**

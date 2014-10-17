@@ -29,6 +29,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
+require_once('lib.php');
 
 /**
  * Module instance settings form
@@ -63,8 +64,7 @@ class mod_tquiz_mod_form extends moodleform_mod {
 		
 		//Add a feedback form
 		$edfield = 'feedback';
-		$editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES,
-               'noclean' => true, 'context' => $this->context, 'subdirs' => true);
+		$editoroptions = tquiz_fetch_editor_options($this->context);
 		$editorname= $edfield . '_editor';
         $mform->addElement('editor', $editorname, get_string($edfield, 'tquiz'),array('rows' => 10),$editoroptions);
         $mform->setType($editorname, PARAM_RAW);
@@ -86,4 +86,17 @@ class mod_tquiz_mod_form extends moodleform_mod {
         // add standard buttons, common to all modules
         $this->add_action_buttons();
     }
+    
+    
+    function data_preprocessing(&$form_data) {
+    
+    	 if ($this->current->instance) {
+			$editoroptions = tquiz_fetch_editor_options($this->context);
+			$itemid = 0;
+			$form_data = file_prepare_standard_editor((object)$form_data, 'feedback', $editoroptions, $this->context,
+								 'mod_tquiz','feedback', $itemid);
+		}
+
+    }
+    
 }
