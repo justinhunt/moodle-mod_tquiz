@@ -46,3 +46,16 @@ $string['tquizsettings'] = 'tquiz settings';
 $string['feedback'] = 'Feedback';
 $string['tquiz:addinstance'] = 'Add a new tquiz';
 $string['tquiz:view'] = 'View tquiz';
+$string['tquiz:manage'] = 'Manage tquiz';
+$string['tquiz:edit'] = 'Manage tquiz';
+$string['overview'] = 'Overview';
+$string['overview_help'] = 'Overview Help';
+$string['view'] = 'View';
+$string['preview'] = 'Preview';
+$string['edit'] = 'Edit';
+$string['reports'] = 'Reports';
+$string['viewreports'] = 'View {$a} completed attempts';
+$string['previewtquiz'] = 'Preview {$a}';
+$string['whatdofirst'] = 'What would you like to do first?';
+$string['addnewquestion'] = 'Add a New Question';
+

@@ -107,7 +107,8 @@ $renderer = $PAGE->get_renderer('mod_tquiz');
 
 //From here we actually display the page.
 //this is core renderer stuff
-echo $renderer->header();
+$mode = "preview";
+echo $renderer->header($tquiz, $cm, $mode, null, get_string('view', 'tquiz'));
 echo $renderer->show_intro($tquiz,$cm);
 
 //This is specfic to our renderer
