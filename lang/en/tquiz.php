@@ -58,4 +58,7 @@ $string['viewreports'] = 'View {$a} completed attempts';
 $string['previewtquiz'] = 'Preview {$a}';
 $string['whatdofirst'] = 'What would you like to do first?';
 $string['addnewquestion'] = 'Add a New Question';
-
+$string['addingquestion'] = 'Adding a New Question';
+$string['editingquestion'] = 'Editing a Question';
+$string['multichoice'] = 'Multichoice';
+$string['cannotdeleteanswers'] = 'Could not delete/update answers for the question';

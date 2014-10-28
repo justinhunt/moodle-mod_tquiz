@@ -105,13 +105,13 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 //public function add_first_page_links(tquiz $tquiz) {
  public function add_first_page_links($tquiz) {
 		global $CFG;
-        $prevpageid = 0;
+        $questionid = 0;
 
         $output = $this->output->heading(get_string("whatdofirst", "tquiz"), 3);
         $links = array();
 
-        $importquestionsurl = new moodle_url('/mod/tquiz/editquestion.php',array('id'=>$this->page->cm->id, 'pageid'=>$prevpageid));
-        $links[] = html_writer::link($importquestionsurl, get_string('addnewquestion', 'tquiz'));
+        $addquestionurl = new moodle_url('/mod/tquiz/editquestion.php',array('id'=>$this->page->cm->id, 'questionid'=>$questionid));
+        $links[] = html_writer::link($addquestionurl, get_string('addnewquestion', 'tquiz'));
 		/*
         $manager = lesson_page_type_manager::get($lesson);
         foreach ($manager->get_add_page_type_links($prevpageid) as $link) {
