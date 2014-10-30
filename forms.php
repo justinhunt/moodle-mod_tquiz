@@ -31,24 +31,32 @@
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/course/lib.php');
 
+define('MOD_TQUIZ_NONE', 0);
+define('MOD_TQUIZ_QTYPE_MULTICHOICE', 1);
+define('MOD_TQUIZ_MULTICHOICE', 'multichoice');
+define('MOD_TQUIZ_AUDIOQUESTION', 'audioquestion');
+define('MOD_TQUIZ_AUDIOANSWER', 'audioanswer');
+define('MOD_TQUIZ_AUDIOQUESTION_FILEAREA', 'audioquestion');
+define('MOD_TQUIZ_AUDIOANSWER_FILEAREA', 'audioanswer');
+define('MOD_TQUIZ_TEXTQUESTION', 'questiontext');
+define('MOD_TQUIZ_TEXTANSWER', 'answertext');
+define('MOD_TQUIZ_TEXTQUESTION_FILEAREA', 'questionarea');
+define('MOD_TQUIZ_TEXTANSWER_FILEAREA', 'answerarea');
+
 /**
- * Abstract class that question type's MUST inherit from.
+ * Abstract class that question type's inherit from.
  *
- * This is the abstract class that ALL add question type forms must extend.
- * You will notice that all but two of the methods this class contains are final.
- * Essentially the only thing that extending classes can do is extend custom_definition.
- * OR if it has a special requirement on creation it can extend construction_override
+ * This is the abstract class that add question type forms must extend.
  *
  * @abstract
- * @copyright  2009 Sam Hemelryk
+ * @copyright  2014 Justin Hunt
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class tquiz_add_question_form_base extends moodleform {
 
     /**
      * This is the classic define that is used to identify this questiontype.
-     * Will be one of LESSON_*
-     * @var int
+     * @var string
      */
     public $qtype;
 
@@ -58,12 +66,19 @@ abstract class tquiz_add_question_form_base extends moodleform {
      */
     public $qtypestring;
 
+	
     /**
      * An array of options used in the htmleditor
      * @var array
      */
     protected $editoroptions = array();
 
+	/**
+     * An array of options used in the filemanager
+     * @var array
+     */
+    protected $audiofilemanageroptions = array();
+	
     /**
      * True if this is a standard question of false if it does something special.
      * Questions are standard questions, branch tables are not
@@ -93,8 +108,9 @@ abstract class tquiz_add_question_form_base extends moodleform {
      */
     public final function definition() {
         $mform = $this->_form;
-        $editoroptions = $this->_customdata['editoroptions'];
-
+        $this->editoroptions = $this->_customdata['editoroptions'];
+		$this->audiofilemanageroptions = $this->_customdata['audiofilemanageroptions'];
+	
         $mform->addElement('header', 'qtypeheading', get_string('createaquestion', 'tquiz', get_string($this->qtypestring, 'tquiz')));
 
         $mform->addElement('hidden', 'id');
@@ -106,28 +122,27 @@ abstract class tquiz_add_question_form_base extends moodleform {
         if ($this->standard === true) {
             $mform->addElement('hidden', 'qtype');
             $mform->setType('qtype', PARAM_INT);
+			
+			$mform->addElement('hidden', 'order');
+            $mform->setType('order', PARAM_INT);
 
-            $mform->addElement('text', 'title', get_string('questiontitle', 'tquiz'), array('size'=>70));
-            $mform->setType('title', PARAM_TEXT);
-            $mform->addRule('title', get_string('required'), 'required', null, 'client');
+            $mform->addElement('text', 'name', get_string('questiontitle', 'tquiz'), array('size'=>70));
+            $mform->setType('name', PARAM_TEXT);
+            $mform->addRule('name', get_string('required'), 'required', null, 'client');
 
-            $this->editoroptions = array('noclean'=>true, 'maxfiles'=>EDITOR_UNLIMITED_FILES, 'maxbytes'=>$this->_customdata['maxbytes']);
-            $mform->addElement('editor', 'contents_editor', get_string('questioncontents', 'tquiz'), null, $this->editoroptions);
-            $mform->setType('contents_editor', PARAM_RAW);
-            $mform->addRule('contents_editor', get_string('required'), 'required', null, 'client');
+            $mform->addElement('editor', MOD_TQUIZ_TEXTQUESTION . '_editor', get_string('questioncontents', 'tquiz'), null, $this->editoroptions);
+            $mform->setType(MOD_TQUIZ_TEXTQUESTION . '_editor', PARAM_RAW);
+            $mform->addRule(MOD_TQUIZ_TEXTQUESTION . '_editor', get_string('required'), 'required', null, 'client');
         }
-
+		$mform->addElement('selectyesno', 'visible', get_string('visible'));
+		
         $this->custom_definition();
+		
+		
 
-        if ($this->_customdata['edit'] === true) {
-            $mform->addElement('hidden', 'edit', 1);
-            $mform->setType('edit', PARAM_BOOL);
-            $this->add_action_buttons(get_string('cancel'), get_string('savequestion', 'tquiz'));
-        } else if ($this->qtype === 'questiontype') {
-            $this->add_action_buttons(get_string('cancel'), get_string('addaquestion', 'tquiz'));
-        } else {
-            $this->add_action_buttons(get_string('cancel'), get_string('savequestion', 'tquiz'));
-        }
+		//add the action buttons
+        $this->add_action_buttons(get_string('cancel'), get_string('savequestion', 'tquiz'));
+
     }
 
 
@@ -159,7 +174,29 @@ abstract class tquiz_add_question_form_base extends moodleform {
             $this->_form->freeze($name);
         }
     }
+	
+    protected final function add_audio_upload($name, $count=-1, $label = null, $required = false) {
+		if($count>-1){
+			$name = $name . $count ;
+		}
+		
+		$this->_form->addElement('filemanager',
+                           $name,
+                           $label,
+                           null,
+						   $this->audiofilemanageroptions
+                           );
+		
+	}
 
+	protected final function add_audio_question_upload($label = null, $required = false) {
+		return $this->add_audio_upload(MOD_TQUIZ_AUDIOQUESTION,-1,$label,$required);
+	}
+	protected final function add_audio_answer_upload($count,$label = null, $required = false) {
+		return $this->add_audio_upload(MOD_TQUIZ_AUDIOANSWER,$count,$label,$required);
+	}	
+	
+	
     /**
      * Convenience function: Adds an answer editor
      *
@@ -172,10 +209,10 @@ abstract class tquiz_add_question_form_base extends moodleform {
         if ($label === null) {
             $label = get_string('answer', 'tquiz');
         }
-        $this->_form->addElement('editor', 'answer_editor['.$count.']', $label, array('rows'=>'4', 'columns'=>'80'), array('noclean'=>true));
-        $this->_form->setDefault('answer_editor['.$count.']', array('text'=>'', 'format'=>FORMAT_MOODLE));
+        $this->_form->addElement('editor', MOD_TQUIZ_TEXTANSWER . $count . '_editor', $label, array('rows'=>'4', 'columns'=>'80'), array('noclean'=>true));
+        $this->_form->setDefault(MOD_TQUIZ_TEXTANSWER . $count . '_editor', array('text'=>'', 'format'=>FORMAT_MOODLE));
         if ($required) {
-            $this->_form->addRule('answer_editor['.$count.']', get_string('required'), 'required', null, 'client');
+            $this->_form->addRule(MOD_TQUIZ_TEXTANSWER . $count . '_editor', get_string('required'), 'required', null, 'client');
         }
     }
     /**
@@ -210,6 +247,7 @@ abstract class tquiz_add_question_form_base extends moodleform {
     }
 }
 
+//this is the standard form for creating a multi choice question
 class tquiz_add_question_form_multichoice extends tquiz_add_question_form_base {
 
     public $qtype = 'multichoice';
@@ -217,13 +255,17 @@ class tquiz_add_question_form_multichoice extends tquiz_add_question_form_base {
 
     public function custom_definition() {
 
+		/*
         $this->_form->addElement('checkbox', 'qoption', get_string('options', 'tquiz'), get_string('multianswer', 'tquiz'));
         $this->_form->setDefault('qoption', 0);
         $this->_form->addHelpButton('qoption', 'multianswer', 'tquiz');
-
-        for ($i = 0; $i < $this->_customdata['tquiz']->maxanswers; $i++) {
-            $this->_form->addElement('header', 'answertitle'.$i, get_string('answer').' '.($i+1));
-            $this->add_answer($i, null, ($i<2));
+		*/
+		
+		$this->add_audio_question_upload(get_string('audioquestionfile','tquiz'));
+		$maxanswers = 4;
+        for ($i = 1; $i <= $maxanswers; $i++) {
+            $this->_form->addElement('header', 'answertitle'.$i, get_string('answer').' '. $i);
+            $this->add_answer($i, null, true);
            // $this->add_response($i);
            // $this->add_jumpto($i, null, ($i == 0 ? LESSON_NEXTPAGE : LESSON_THISPAGE));
            // $this->add_score($i, null, ($i===0)?1:0);
@@ -231,6 +273,7 @@ class tquiz_add_question_form_multichoice extends tquiz_add_question_form_base {
     }
 }
 
+//this is for responding to questions, just for reference
 class tquiz_display_answer_form_multichoice_singleanswer extends moodleform {
 
     public function definition() {

@@ -126,5 +126,18 @@ defined('MOODLE_INTERNAL') || die();
         
         return $question;
     }
+	
+	function mod_tquiz_fetch_editor_options($course, $modulecontext){
+		$maxfiles=99;
+		$maxbytes=$course->maxbytes;
+		return  array('trusttext'=>true, 'subdirs'=>true, 'maxfiles'=>$maxfiles,
+							  'maxbytes'=>$maxbytes, 'context'=>$modulecontext);
+	}
+
+	function mod_tquiz_fetch_filemanager_options($course, $maxfiles=1){
+		$maxbytes=$course->maxbytes;
+		return array('subdirs'=>true, 'maxfiles'=>$maxfiles,'maxbytes'=>$maxbytes,'accepted_types' => array('audio'));
+	}
+
 
 

@@ -17,6 +17,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/mod/tquiz/forms.php');
+
 /**
  * A custom renderer class that extends the plugin_renderer_base.
  *
@@ -110,8 +112,9 @@ class mod_tquiz_renderer extends plugin_renderer_base {
         $output = $this->output->heading(get_string("whatdofirst", "tquiz"), 3);
         $links = array();
 
-        $addquestionurl = new moodle_url('/mod/tquiz/editquestion.php',array('id'=>$this->page->cm->id, 'questionid'=>$questionid));
-        $links[] = html_writer::link($addquestionurl, get_string('addnewquestion', 'tquiz'));
+        $addquestionurl = new moodle_url('/mod/tquiz/editquestion.php',
+			array('id'=>$this->page->cm->id, 'questionid'=>$questionid, 'qtype'=>MOD_TQUIZ_QTYPE_MULTICHOICE));
+        $links[] = html_writer::link($addquestionurl, get_string('addmultichoicequestion', 'tquiz'));
 		/*
         $manager = lesson_page_type_manager::get($lesson);
         foreach ($manager->get_add_page_type_links($prevpageid) as $link) {
