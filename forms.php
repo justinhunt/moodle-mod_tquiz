@@ -33,6 +33,7 @@ require_once($CFG->dirroot . '/course/lib.php');
 
 define('MOD_TQUIZ_NONE', 0);
 define('MOD_TQUIZ_QTYPE_MULTICHOICE', 1);
+define('MOD_TQUIZ_QTYPE_AUDIOCHOICE', 2);
 define('MOD_TQUIZ_MULTICHOICE', 'multichoice');
 define('MOD_TQUIZ_AUDIOQUESTION', 'audioquestion');
 define('MOD_TQUIZ_AUDIOANSWER', 'audioanswer');
@@ -267,13 +268,29 @@ class tquiz_add_question_form_multichoice extends tquiz_add_question_form_base {
             $this->_form->addElement('header', 'answertitle'.$i, get_string('answer').' '. $i);
             $this->add_answer($i, null, true);
            // $this->add_response($i);
-           // $this->add_jumpto($i, null, ($i == 0 ? LESSON_NEXTPAGE : LESSON_THISPAGE));
            // $this->add_score($i, null, ($i===0)?1:0);
         }
     }
 }
 
-//this is for responding to questions, just for reference
+
+//this is the standard form for creating a multi choice question
+class tquiz_add_question_form_audiochoice extends tquiz_add_question_form_base {
+
+    public $qtype = 'audiochoice';
+    public $qtypestring = 'audiochoice';
+
+    public function custom_definition() {
+
+		$maxanswers = 4;
+        for ($i = 1; $i <= $maxanswers; $i++) {
+            $this->_form->addElement('header', 'answertitle'.$i, get_string('answer').' '. $i);
+            $this->add_audio_answer_upload($i, null, true);
+        }
+    }
+}
+
+//this is for responding to questions, just for reference at this stage
 class tquiz_display_answer_form_multichoice_singleanswer extends moodleform {
 
     public function definition() {

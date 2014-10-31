@@ -33,6 +33,7 @@ global $USER,$DB;
 $questionid = optional_param('questionid',0 ,PARAM_INT);
 $id     = required_param('id', PARAM_INT);         // Course Module ID
 $qtype  = optional_param('qtype', MOD_TQUIZ_NONE, PARAM_INT);
+$action = optional_param('action','edit',PARAM_TEXT);
 
 // get the objects we need
 $cm = get_coursemodule_from_id('tquiz', $id, 0, false, MUST_EXIST);
@@ -45,20 +46,73 @@ $context = context_module::instance($cm->id);
 require_capability('mod/tquiz:edit', $context);
 
 //set up the page object
-$PAGE->set_url('/mod/tquiz/editquestion.php', array('questionid'=>$questionid, 'id'=>$id, 'qtype'=>$qtype));
+$PAGE->set_url('/mod/tquiz/managequestions.php', array('questionid'=>$questionid, 'id'=>$id, 'qtype'=>$qtype));
 $PAGE->set_title(format_string($tquiz->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('course');
 
 //are we in new or edit mode?
-if ($questionid !=0) {
+if ($questionid) {
     $question = $DB->get_record('tquiz_questions', array('id'=>$questionid,'tquiz' => $cm->instance), '*', MUST_EXIST);
+	if(!$question){
+		print_error('could not find question of id:' . $questionid);
+	}
     $qtype = $question->qtype;
     $edit = true;
 } else {
     $edit = false;
 }
+
+//we always head back to the tquiz questions page
+$redirecturl = new moodle_url('/mod/tquiz/edit.php', array('id'=>$cm->id));
+
+	//handle delete actions
+    if($action == 'confirmdelete'){
+		$renderer = $PAGE->get_renderer('mod_tquiz');
+		echo $renderer->header($tquiz, $cm, '', null, get_string('confirmquestiondeletetitle', 'tquiz'));
+		echo $renderer->confirm(get_string("confirmquestiondelete","tquiz",$question->name), 
+			new moodle_url('managequestions.php', array('action'=>'delete','id'=>$cm->id,'questionid'=>$questionid)), 
+			$redirecturl);
+		echo $renderer->footer();
+		return;
+
+	/////// Delete Question NOW////////
+    }elseif ($action == 'delete'){
+    	require_sesskey();
+		//later we will need to delete from the attempts table
+		/*
+        if ($DB->count_records("tquiz_attempts",array("tquiz"=>$tquiz->id,'question'=>$questionid))){
+            if(!$DB->delete_records("tquiz_attempts",array("tquiz"=>$tquiz->id,'question'=>$questionid))){
+                print_error("Could not delete attempts for this question");
+            }
+        }
+        */
+
+        if (!$DB->delete_records("tquiz_questions", array('id'=>$questionid))){
+            print_error("Could not delete question");
+        }
+		//remove files
+		$fs= get_file_storage();
+		
+		$fileareas = array(MOD_TQUIZ_TEXTQUESTION_FILEAREA,
+		MOD_TQUIZ_TEXTANSWER_FILEAREA . '1',
+		MOD_TQUIZ_TEXTANSWER_FILEAREA . '2',
+		MOD_TQUIZ_TEXTANSWER_FILEAREA . '3',
+		MOD_TQUIZ_TEXTANSWER_FILEAREA . '4',
+		MOD_TQUIZ_AUDIOQUESTION_FILEAREA,
+		MOD_TQUIZ_AUDIOANSWER_FILEAREA . '1',
+		MOD_TQUIZ_AUDIOANSWER_FILEAREA . '2',
+		MOD_TQUIZ_AUDIOANSWER_FILEAREA . '3',
+		MOD_TQUIZ_AUDIOANSWER_FILEAREA . '4');
+		foreach ($fileareas as $filearea){
+			$fs->delete_area_files($context->id,'mod_tquiz',$filearea,$questionid);
+		}
+        redirect($redirecturl);
+	
+    }
+
+
 
 //get filechooser and html editor options
 $editoroptions = mod_tquiz_fetch_editor_options($course, $context);
@@ -72,14 +126,17 @@ switch($qtype){
 			'audiofilemanageroptions'=>$audiofilemanageroptions)
 		);
 		break;
+	case MOD_TQUIZ_QTYPE_AUDIOCHOICE:
+		$mform = new tquiz_add_question_form_audiochoice(null,
+			array('editoroptions'=>$editoroptions, 
+			'audiofilemanageroptions'=>$audiofilemanageroptions)
+		);
+		break;
 	case MOD_TQUIZ_NONE:
 	default:
 		print_error('No question type specifified');
 
 }
-
-//we always head back to the tquiz questions page
-$redirecturl = new moodle_url('/mod/tquiz/edit.php', array('id'=>$cm->id));
 
 //if the cancel button was pressed, we are out of here
 if ($mform->is_cancelled()) {
@@ -146,12 +203,17 @@ if ($data = $mform->get_data()) {
                                         'mod_tquiz', MOD_TQUIZ_TEXTANSWER_FILEAREA.$i, $thequestion->id);
 					$thequestion->{MOD_TQUIZ_TEXTANSWER . $i} = $data->{MOD_TQUIZ_TEXTANSWER . $i} ;
 					$thequestion->{MOD_TQUIZ_TEXTANSWER . $i .'format'} = $data->{MOD_TQUIZ_TEXTANSWER . $i .'format'} ;
-					//saving audio files
-					/*
-					file_save_draft_area_files($data->{MOD_TQUIZ_AUDIOANSWER . $i}, $context->id, 'mod_tquiz', MOD_TQUIZ_AUDIOQUESTION_FILEAREA . $i,
-					   $question->id, $audiofilemanageroptions);
-					   */
+					
 				}
+				break;
+			case MOD_TQUIZ_QTYPE_AUDIOCHOICE:
+				// Save answer data
+				$maxanswers = 4;
+				for($i=1;$i<=$maxanswers;$i++){
+					file_save_draft_area_files($data->{MOD_TQUIZ_AUDIOANSWER . $i}, $context->id, 'mod_tquiz', MOD_TQUIZ_AUDIOANSWER_FILEAREA . $i,
+					   $thequestion->id, $audiofilemanageroptions);
+				}
+				break;
 										
 			default:
 				break;
@@ -209,6 +271,20 @@ if ($edit) {
 									$audiofilemanageroptions);
 				$data->{MOD_TQUIZ_AUDIOCONTENT . $i} = $draftitemid;
 				*/
+			
+			}
+			
+			break;
+		case MOD_TQUIZ_QTYPE_AUDIOCHOICE:
+			
+			//prepare answer areas
+			$maxanswers = 4;
+			for($i=1;$i<=$maxanswers;$i++){
+				//audio editor
+				$draftitemid = file_get_submitted_draft_itemid(MOD_TQUIZ_AUDIOANSWER . $i);
+				file_prepare_draft_area($draftitemid, $context->id, 'mod_tquiz', MOD_TQUIZ_AUDIOANSWER_FILEAREA . $i, $data->questionid,
+									$audiofilemanageroptions);
+				$data->{MOD_TQUIZ_AUDIOANSWER . $i} = $draftitemid;
 			
 			}
 			

@@ -51,7 +51,7 @@ $modulecontext = context_module::instance($cm->id);
 
 //Diverge logging logic at Moodle 2.7
 if($CFG->version<2014051200){
-	add_to_log($course->id, 'tquiz', 'view', "view.php?id={$cm->id}", $tquiz->name, $cm->id);
+	add_to_log($course->id, 'tquiz', 'reports', "reports.php?id={$cm->id}", $tquiz->name, $cm->id);
 }else{
 	// Trigger module viewed event.
 	$event = \mod_tquiz\event\course_module_viewed::create(array(
@@ -66,7 +66,7 @@ if($CFG->version<2014051200){
 
 
 /// Set up the page header
-$PAGE->set_url('/mod/tquiz/view.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/tquiz/reports.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($tquiz->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
@@ -108,12 +108,7 @@ $renderer = $PAGE->get_renderer('mod_tquiz');
 //From here we actually display the page.
 //this is core renderer stuff
 $mode = "preview";
-echo $renderer->header($tquiz, $cm, $mode, null, get_string('view', 'tquiz'));
-echo $renderer->show_intro($tquiz,$cm);
-
-//This is specfic to our renderer
-//echo $renderer->show_something($someadminsetting);
-//echo $renderer->show_something($someinstancesetting);
-
+echo $renderer->header($tquiz, $cm, $mode, null, get_string('reports', 'tquiz'));
+echo "<h1>This is gonna be good!</h1>";
 // Finish the page
 echo $renderer->footer();

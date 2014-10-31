@@ -104,30 +104,91 @@ class mod_tquiz_renderer extends plugin_renderer_base {
      * @param lesson $lesson
      * @return string
      */
-//public function add_first_page_links(tquiz $tquiz) {
- public function add_first_page_links($tquiz) {
+ public function add_edit_page_links($tquiz) {
 		global $CFG;
         $questionid = 0;
 
-        $output = $this->output->heading(get_string("whatdofirst", "tquiz"), 3);
+        $output = $this->output->heading(get_string("whatdonow", "tquiz"), 3);
         $links = array();
 
-        $addquestionurl = new moodle_url('/mod/tquiz/editquestion.php',
+        $addmultichoicequestionurl = new moodle_url('/mod/tquiz/managequestions.php',
 			array('id'=>$this->page->cm->id, 'questionid'=>$questionid, 'qtype'=>MOD_TQUIZ_QTYPE_MULTICHOICE));
-        $links[] = html_writer::link($addquestionurl, get_string('addmultichoicequestion', 'tquiz'));
-		/*
-        $manager = lesson_page_type_manager::get($lesson);
-        foreach ($manager->get_add_page_type_links($prevpageid) as $link) {
-            $link['addurl']->param('firstpage', 1);
-            $links[] = html_writer::link($link['addurl'], $link['name']);
-        }
+        $links[] = html_writer::link($addmultichoicequestionurl, get_string('addmultichoicequestion', 'tquiz'));
+        
+        $addaudiochoicequestionurl = new moodle_url('/mod/tquiz/managequestions.php',
+			array('id'=>$this->page->cm->id, 'questionid'=>$questionid, 'qtype'=>MOD_TQUIZ_QTYPE_AUDIOCHOICE));
+        $links[] = html_writer::link($addaudiochoicequestionurl, get_string('addaudiochoicequestion', 'tquiz'));
 		
-
-        $addquestionurl = new moodle_url('/mod/lesson/editpage.php', array('id'=>$this->page->cm->id, 'pageid'=>$prevpageid, 'firstpage'=>1));
-        $links[] = html_writer::link($addquestionurl, get_string('addaquestionpage', 'lesson'));
-		*/
+		
         return $this->output->box($output.'<p>'.implode('</p><p>', $links).'</p>', 'generalbox firstpageoptions');
     }
+	
+/**
+	 * Return the html table of homeworks for a group  / course
+	 * @param array homework objects
+	 * @param integer $courseid
+	 * @return string html of table
+	 */
+	function show_questions_list($questions,$cm){
+	
+		if(!$questions){
+			return $this->output->heading(get_string('noquestions','tquiz'), 3, 'main');
+		}
+	
+		$table = new html_table();
+		$table->id = 'mod_tquiz_qpanel';
+		$table->head = array(
+			get_string('questionname', 'tquiz'),
+			get_string('questiontype', 'tquiz'),
+			get_string('actions', 'tquiz')
+		);
+		$table->headspan = array(1,1,3);
+		$table->colclasses = array(
+			'questionname', 'questiontitle', 'edit','preview','delete'
+		);
+
+		//sort by start date
+		core_collator::asort_objects_by_property($questions,'timecreated',core_collator::SORT_NUMERIC);
+
+		//loop through the homoworks and add to table
+		foreach ($questions as $question) {
+			$row = new html_table_row();
+		
+		
+			$questionnamecell = new html_table_cell($question->name);	
+			switch($question->qtype){
+				case MOD_TQUIZ_QTYPE_MULTICHOICE:
+					$questiontype = get_string('multichoice','tquiz');
+					break;
+				case MOD_TQUIZ_QTYPE_AUDIOCHOICE:
+					$questiontype = get_string('audiochoice','tquiz');
+					break;
+				default:
+			} 
+			$questiontypecell = new html_table_cell($questiontype);
+		
+			$actionurl = '/mod/tquiz/managequestions.php';
+			$editurl = new moodle_url($actionurl, array('id'=>$cm->id,'questionid'=>$question->id));
+			$editlink = html_writer::link($editurl, get_string('editquestion', 'tquiz'));
+			$editcell = new html_table_cell($editlink);
+			
+			$previewurl = new moodle_url($actionurl, array('id'=>$cm->id,'questionid'=>$question->id));
+			$previewlink = html_writer::link($previewurl, get_string('previewquestion', 'tquiz'));
+			$previewcell = new html_table_cell($previewlink);
+		
+			$deleteurl = new moodle_url($actionurl, array('id'=>$cm->id,'questionid'=>$question->id,'action'=>'confirmdelete'));
+			$deletelink = html_writer::link($deleteurl, get_string('deletequestion', 'tquiz'));
+			$deletecell = new html_table_cell($deletelink);
+
+			$row->cells = array(
+				$questionnamecell, $questiontypecell, $editcell, $previewcell, $deletecell
+			);
+			$table->data[] = $row;
+		}
+
+		return html_writer::table($table);
+
+	}
 
 
   

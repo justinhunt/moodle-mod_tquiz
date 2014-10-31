@@ -18,13 +18,13 @@
 /**
  * Provides the interface for overall authoring of lessons
  *
- * @package mod_lesson
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @package mod_tquiz
+ * @copyright  2014 Justin Hunt  {@link http://poodll.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
 require_once('../../config.php');
-require_once($CFG->dirroot.'/mod/lesson/locallib.php');
+//require_once($CFG->dirroot.'/mod/lesson/locallib.php');
 
 $id = required_param('id', PARAM_INT);
 
@@ -32,12 +32,12 @@ $cm = get_coursemodule_from_id('tquiz', $id, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 //$tquiz = new tquiz($DB->get_record('tquiz', array('id' => $cm->instance), '*', MUST_EXIST));
 $tquiz = $DB->get_record('tquiz', array('id' => $cm->instance), '*', MUST_EXIST);
-
+$questions = $DB->get_records('tquiz_questions',array('tquiz'=>$tquiz->id));
 
 require_login($course, false, $cm);
 
 $context = context_module::instance($cm->id);
-require_capability('mod/lesson:manage', $context);
+//require_capability('mod/lesson:manage', $context);
 
 //$mode    = optional_param('mode', get_user_preferences('lesson_view', 'collapsed'), PARAM_ALPHA);
 $mode='edit';
@@ -52,12 +52,12 @@ $renderer = $PAGE->get_renderer('mod_tquiz');
 $PAGE->navbar->add(get_string('edit'));
 echo $renderer->header($tquiz, $cm, $mode, null, get_string('edit', 'tquiz'));
 
-//if (!$tquiz->has_questions()) {
-if(true){
+
     // There are no questions; give teacher some options
     require_capability('mod/tquiz:edit', $context);
-    echo $renderer->add_first_page_links($tquiz);
-} else {
+    echo $renderer->add_edit_page_links($tquiz);
+
+/*
     switch ($mode) {
         case 'collapsed':
            // echo $renderer->display_edit_collapsed($lesson, $lesson->firstpageid);
@@ -71,6 +71,10 @@ if(true){
          //   echo $renderer->display_edit_full($lesson, $lesson->firstpageid, 0);
             break;
     }
+*/
+
+if($questions){
+echo $renderer->show_questions_list($questions,$cm);
 }
 
 echo $renderer->footer();
