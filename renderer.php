@@ -18,6 +18,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/tquiz/forms.php');
+require_once($CFG->dirroot.'/mod/tquiz/locallib.php');
 
 /**
  * A custom renderer class that extends the plugin_renderer_base.
@@ -98,6 +99,13 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 
         return $output;
     }
+    
+    /**
+     * Return HTML to display limited header
+     */
+      public function previewheader(){
+      	return $this->output->header();
+      }
 	
 	 /**
      * Return HTML to display add first page links
@@ -129,7 +137,7 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 	 * @param integer $courseid
 	 * @return string html of table
 	 */
-	function show_questions_list($questions,$cm){
+	function show_questions_list($questions,$tquiz,$cm){
 	
 		if(!$questions){
 			return $this->output->heading(get_string('noquestions','tquiz'), 3, 'main');
@@ -172,8 +180,9 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 			$editlink = html_writer::link($editurl, get_string('editquestion', 'tquiz'));
 			$editcell = new html_table_cell($editlink);
 			
-			$previewurl = new moodle_url($actionurl, array('id'=>$cm->id,'questionid'=>$question->id));
-			$previewlink = html_writer::link($previewurl, get_string('previewquestion', 'tquiz'));
+			//$previewurl = new moodle_url($actionurl, array('id'=>$cm->id,'questionid'=>$question->id, 'action'=>'previewquestion'));
+			//$previewlink = html_writer::link($previewurl, get_string('previewquestion', 'tquiz'));
+			$previewlink = $this->fetch_preview_link($question->id,$tquiz->id);
 			$previewcell = new html_table_cell($previewlink);
 		
 			$deleteurl = new moodle_url($actionurl, array('id'=>$cm->id,'questionid'=>$question->id,'action'=>'confirmdelete'));
@@ -189,8 +198,53 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		return html_writer::table($table);
 
 	}
+	
+	
+	function fetch_preview_link($questionid, $tquizid){
+		// print's a popup link to your custom page
+		$link = new moodle_url('/mod/tquiz/preview.php',array('questionid'=>$questionid, 'tquizid'=>$tquizid));
+		return  $this->output->action_link($link, get_string('preview','mod_tquiz'), 
+			new popup_action('click', $link));
+	
+	}
+	
+	/**
+	 * Return the html table of homeworks for a group  / course
+	 * @param object question
+	 * @param object course module
+	 * @return string html of question
+	 */
+	function fetch_question_display($thequestion,$tquiz, $context){
+			global $COURSE;
+			//get question text div (easy)
+			$questiontext  = html_writer::tag('div', $thequestion->{MOD_TQUIZ_TEXTQUESTION}, array('class' => 'tquiz_questiontext'));
+			$questiontext  = file_rewrite_pluginfile_urls($questiontext, 'pluginfile.php', $context->id, 
+			'mod_tquiz', MOD_TQUIZ_TEXTQUESTION_FILEAREA, $thequestion->id, 
+			mod_tquiz_fetch_editor_options($COURSE,$context));
 
+			//get question audio div (not so easy)			
+			$fs = get_file_storage();
+			$files = $fs->get_area_files($context->id, 'mod_tquiz',MOD_TQUIZ_AUDIOQUESTION_FILEAREA,$thequestion->id);
+			$audioplayer =false;
+			$questionaudio='';
+			foreach ($files as $file) {
+				$filename = $file->get_filename();
+				if($filename=='.'){continue;}
+				$filepath = '/';//$file->get_filepath();
+				$audiourl = moodle_url::make_pluginfile_url($context->id,'mod_tquiz',
+						MOD_TQUIZ_AUDIOQUESTION_FILEAREA, $thequestion->id,
+						$filepath, $filename);
+				$audioplayer = html_writer::link($audiourl, $filename);
+				break;
+			}
+			if($audioplayer){
+				$questionaudio = html_writer::tag('div', $audioplayer, array('class' => 'tquiz_questionaudio'));
+			}
+			
+			//return text + audio
+			return format_text($questiontext . $questionaudio);
+			
+	}
 
-  
 }
 

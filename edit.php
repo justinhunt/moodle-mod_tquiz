@@ -74,7 +74,6 @@ echo $renderer->header($tquiz, $cm, $mode, null, get_string('edit', 'tquiz'));
 */
 
 if($questions){
-echo $renderer->show_questions_list($questions,$cm);
+	echo $renderer->show_questions_list($questions,$tquiz,$cm);
 }
-
 echo $renderer->footer();

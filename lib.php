@@ -387,8 +387,38 @@ function tquiz_pluginfile($course, $cm, $context, $filearea, array $args, $force
     }
 
     require_login($course, true, $cm);
+	
+	$itemid = (int)array_shift($args);
 
-    send_file_not_found();
+    require_course_login($course, true, $cm);
+
+    if (!has_capability('mod/tquiz:view', $context)) {
+        return false;
+    }
+
+    // $arg could be revision number or index.html
+   // $arg = array_shift($args);
+   //$itemid = (int)array_shift($args);
+
+        $fs = get_file_storage();
+        $relativepath = implode('/', $args);
+        $fullpath = "/$context->id/mod_tquiz/$filearea/$itemid/$relativepath";
+		//error_log($fullpath);
+        if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+		/*
+            $page = $DB->get_record('webquest', array('id'=>$cm->instance), 'id, legacyfiles', MUST_EXIST);
+            if ($page->legacyfiles != RESOURCELIB_LEGACYFILES_ACTIVE) {
+                return false;
+            }
+            if (!$file = resourcelib_try_file_migration('/'.$relativepath, $cm->id, $cm->course, 'mod_webquest', $filearea, $itemid)) {
+                return false;
+            }
+			*/
+          return false;
+        }
+
+        // finally send the file
+        send_stored_file($file, null, 0, $forcedownload, $options);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
