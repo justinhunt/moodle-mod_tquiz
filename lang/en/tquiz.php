@@ -75,6 +75,7 @@ $string['audioquestionfile'] = 'Question Audio(MP3)';
 $string['questionname'] = 'Question Name';
 $string['questiontype'] = 'Question Type';
 $string['actions'] = 'Actions';
+$string['startquiz'] = 'Start Quiz';
 $string['editquestion'] = 'Edit Question';
 $string['previewquestion'] = 'Preview Question';
 $string['deletequestion'] = 'Delete Question';
