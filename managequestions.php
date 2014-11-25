@@ -295,6 +295,7 @@ if ($edit) {
     $PAGE->navbar->add(get_string('edit'), new moodle_url('/mod/tquiz/edit.php', array('id'=>$id)));
     $PAGE->navbar->add(get_string('editingquestion', 'tquiz', get_string($mform->qtypestring, 'tquiz')));
 	$renderer = $PAGE->get_renderer('mod_tquiz');
-	echo $renderer->header($tquiz, $cm, '', null, get_string('edit', 'tquiz'));
+	$mode='edit';
+	echo $renderer->header($tquiz, $cm,$mode, null, get_string('edit', 'tquiz'));
 	$mform->display();
 	echo $renderer->footer();

@@ -90,7 +90,7 @@ $jsmodule = array(
 );
 //here we set up any info we need to pass into javascript
 $opts =Array();
-$opts['someinstancesetting'] = $someinstancesetting;
+$opts['cmid'] = $cm->id;
 
 
 //this inits the M.mod_tquiz thingy, after the page has loaded.
@@ -106,14 +106,36 @@ $PAGE->requires->js_init_call('M.mod_tquiz.helper.init', array($opts),false,$jsm
 $renderer = $PAGE->get_renderer('mod_tquiz');
 
 //From here we actually display the page.
-//this is core renderer stuff
+$frames = array();
+$questiondivs = '';
+$questions = $DB->get_records('tquiz_questions',array('tquiz'=>$tquiz->id));
+$questionids = array();
+
+foreach($questions as $question){
+	$q = $renderer->fetch_question_div($question, $tquiz,$modulecontext);
+	$questiondivs .= $q;
+	$questionids[]=$question->id;
+}
+
+
+//get our javascript all ready to go
+//We can omit $jsmodule, but its nice to have it here, 
+//if for example we need to include some funky YUI stuff
+$jsmodule = array(
+	'name'     => 'mod_tquiz',
+	'fullpath' => '/mod/tquiz/module.js',
+	'requires' => array()
+);
+$opts =Array();
+$opts['cmid']=$cm->id;
+$opts['quids']=$questionids;
+
+//this inits the M.mod_tquiz thingy, after the page has loaded.
+$PAGE->requires->js_init_call('M.mod_tquiz.helper.init', array($opts,$questionids),false,$jsmodule);
+
 $mode = "preview";
 echo $renderer->header($tquiz, $cm, $mode, null, get_string('view', 'tquiz'));
-echo $renderer->show_intro($tquiz,$cm);
-
-//This is specfic to our renderer
-//echo $renderer->show_something($someadminsetting);
-//echo $renderer->show_something($someinstancesetting);
-
-// Finish the page
+echo $renderer->fetch_intro($tquiz,$cm);
+echo $questiondivs;
+echo $renderer->fetch_feedback($tquiz,$cm);
 echo $renderer->footer();

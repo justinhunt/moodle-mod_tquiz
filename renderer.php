@@ -42,13 +42,48 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 	 /**
      *
      */
-	public function show_intro($tquiz,$cm){
+	public function fetch_intro($tquiz,$cm){
 		$ret = "";
 		if (trim(strip_tags($tquiz->intro))) {
-			echo $this->output->box_start('mod_introbox');
-			echo format_module_intro('tquiz', $tquiz, $cm->id);
-			echo $this->output->box_end();
+			$ret .= $this->output->box_start('mod_introbox');
+			$ret .= format_module_intro('tquiz', $tquiz, $cm->id);
+			$ret .= $this->output->box_end();
 		}
+		
+		//start button
+		$bigbuttonhtml = html_writer::tag('button','STARTY WARTY',  
+		array('class'=>'mod_tquiz_bigbutton yui3-button',
+		'id'=>'mod_tquiz_start_button','onclick'=>'M.mod_tquiz.helper.shownext()'));	
+		$bigbuttoncontainer = html_writer::tag('div', $bigbuttonhtml  
+			,array('class'=>'mod_tquiz_bigbutton_container'));
+		
+		$ret .= $bigbuttoncontainer;
+		
+		return html_writer::tag('div', $ret, array('class'=>'mod_tquiz_intro','id'=>'tquiz_intro_div'));
+	}
+	
+		 /**
+     *
+     */
+	public function fetch_feedback($tquiz,$cm){
+		$ret = "";
+		if (trim(strip_tags($tquiz->feedback))) {
+			$ret .= $this->output->box_start('mod_introbox');
+			$ret .= format_text($tquiz->feedback);
+			$ret .= $this->output->box_end();
+		}
+		
+		//start button
+		/*
+		$bigbuttonhtml = html_writer::tag('button','STARTY WARTY',  
+		array('class'=>'mod_tquiz_bigbutton yui3-button',
+		'id'=>'mod_tquiz_start_button','onclick'=>'M.mod_tquiz.helper.donext()'));	
+		$bigbuttoncontainer = html_writer::tag('div', $bigbuttonhtml  
+			,array('class'=>'mod_tquiz_bigbutton_container'));
+		
+		$ret .= $bigbuttoncontainer;
+		*/
+		return html_writer::tag('div', $ret, array('class'=>'mod_tquiz_feedback','id'=>'tquiz_feedback_div'));
 	}
 	
 	  /**
@@ -217,7 +252,7 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 	function fetch_question_display($thequestion,$tquiz, $context){
 			global $COURSE;
 			//get question text div (easy)
-			$questiontext  = html_writer::tag('div', $thequestion->{MOD_TQUIZ_TEXTQUESTION}, array('class' => 'tquiz_questiontext'));
+			$questiontext  = html_writer::tag('div', $thequestion->{MOD_TQUIZ_TEXTQUESTION}, array('class' => 'mod_tquiz_questionbox'));
 			$questiontext  = file_rewrite_pluginfile_urls($questiontext, 'pluginfile.php', $context->id, 
 			'mod_tquiz', MOD_TQUIZ_TEXTQUESTION_FILEAREA, $thequestion->id, 
 			mod_tquiz_fetch_editor_options($COURSE,$context));
@@ -238,12 +273,124 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 				break;
 			}
 			if($audioplayer){
-				$questionaudio = html_writer::tag('div', $audioplayer, array('class' => 'tquiz_questionaudio'));
+				//$questionaudio =	$this->fetch_audio_button_player($audiourl,'question','question_' . $thequestion->id);
+				 $questionaudio = html_writer::tag('div', $audioplayer, array('class' => 'tquiz_questionaudio yui3-button soundmanagerplayer'));
 			}
 			
 			//return text + audio
 			return format_text($questiontext . $questionaudio);
 			
+	}
+	
+	function fetch_audio_button_player($audiolink,$profile, $id){
+		global $CFG;
+
+		//Button template
+		$bigbuttonhtml  = html_writer::empty_tag('input', array('type'=>'image',
+		  		'class'=>'yui3-button mod_tquiz_big_button','id'=>'mod_tquiz_audiobutton_@@BUTTONID@@',
+		  		'src'=>$CFG->wwwroot . '/mod/tquiz/pix/@@IMGSRC@@.png', 'onclick'=>'M.mod_tquiz.helper.answerclick(1)'));
+				//'onclick'=>'M.mod_tquiz.helper.answerclick(@@QUESTIONID@@,@@ANSWERINDEX@@)'));	
+				//'onclick'=>'M.mod_tquiz.sm2.handleaudioclick("@@BUTTONID@@")'));
+		
+		switch($profile){
+			case 'question':
+				$bigbuttonhtml  = str_replace('@@IMGSRC@@','questionplay',$bigbuttonhtml);
+				$bigbuttonhtml  = str_replace('@@BUTTONID@@',$id,$bigbuttonhtml);
+				break;
+			case 'answer':
+				$bigbuttonhtml  = str_replace('@@IMGSRC@@','questionplay',$bigbuttonhtml);
+				$bigbuttonhtml  = str_replace('@@BUTTONID@@',$id,$bigbuttonhtml);
+			default:
+				break;
+		
+		}
+		$sound= new stdClass();
+		$sound->id = $id;
+		$sound->url=$audiolink;
+		$jsonsound =  json_encode($sound);
+		$js='if(!m_mod_tquiz_sm2_sounds){var m_mod_tquiz_sm2_sounds = new Array();} m_mod_tquiz_sm2_sounds.push('.$jsonsound.');';
+		$bigbuttonhtml .= html_writer::tag('script', $js ,array('type'=>'text/javascript'));
+		
+		$bigbuttoncontainer = html_writer::tag('div', $bigbuttonhtml  
+			,array('class'=>'mod_tquiz_bigbutton_container'));
+			
+		//echo $bigbuttonhtml;
+		return  $bigbuttoncontainer;
+	
+	}
+	
+		/**
+	 * Return the html table of homeworks for a group  / course
+	 * @param object question
+	 * @param object course module
+	 * @return string html of question
+	 */
+	function fetch_answers_display($thequestion,$tquiz, $context){
+			global $COURSE;
+			
+			//GET url and hidden field for button forms.
+		$actionurl = new moodle_url('/mod/tquiz/view.php');
+	//	$h_action = '';//html_writer::tag('input',null,array('type'=>'hidden','name'=>'action', 'value'=>'add'));
+		
+		//Button template
+		$bigbuttonhtml = html_writer::tag('button','@@BUTTONLABEL@@',  
+		array('class'=>'mod_tquiz_bigbutton yui3-button',
+		'id'=>'mod_tquiz_@@ANSWERINDEX@@_button','onclick'=>'M.mod_tquiz.helper.answerclick(@@QUESTIONID@@,@@ANSWERINDEX@@)'));	
+		$bigbuttoncontainer = html_writer::tag('div', $bigbuttonhtml  
+			,array('class'=>'mod_tquiz_bigbutton_container'));
+		
+	//	$bigbuttontemplate = html_writer::tag('form',$bigbuttoncontainer,array('action'=>$actionurl->out()));
+	$bigbuttontemplate = html_writer::tag('div',$bigbuttoncontainer);
+			
+			
+			$aindexes = array(1,2,3,4);
+			$answers = array();
+			foreach($aindexes as $aindex){
+				switch($thequestion->qtype){
+					case MOD_TQUIZ_QTYPE_MULTICHOICE:
+						$theanswer = str_replace('@@BUTTONLABEL@@',$thequestion->{'answertext' . $aindex},$bigbuttontemplate);
+						$theanswer = str_replace('@@QUESTIONID@@',$aindex,$theanswer);
+						$theanswer = str_replace('@@ANSWERINDEX@@',$aindex,$theanswer);
+						$answers[] =$theanswer;
+						break;
+					case MOD_TQUIZ_QTYPE_AUDIOCHOICE:
+						//get question audio div (not so easy)			
+						$fs = get_file_storage();
+						$files = $fs->get_area_files($context->id, 'mod_tquiz',MOD_TQUIZ_AUDIOANSWER_FILEAREA . $aindex,$thequestion->id);
+						$audioplayer =false;
+						foreach ($files as $file) {
+							$filename = $file->get_filename();
+							if($filename=='.'){continue;}
+							$filepath = '/';//$file->get_filepath();
+							$audiourl = moodle_url::make_pluginfile_url($context->id,'mod_tquiz',
+									MOD_TQUIZ_AUDIOANSWER_FILEAREA . $aindex, $thequestion->id,
+									$filepath, $filename);
+							//$audioplayer = html_writer::link($audiourl, $filename);
+							$audioplayer =	$this->fetch_audio_button_player($audiourl,'answer','answer_' . $thequestion->id . '_' . $aindex);
+							break;
+						}
+						if($audioplayer){
+							$answers[] =  html_writer::tag('div', $audioplayer, array('class' => 'tquiz_answeraudio'));
+						}
+						break;
+					default:
+				} 			
+			}//end of for each
+			
+			$allanswers =  implode(' ',$answers);
+			
+			//put a bounding box around the buttons to force them into a 2 x 2 centered grid
+			$allanswerscontainer = html_writer::tag('div', $allanswers  
+			,array('class'=>'mod_tquiz_allanswers_container'));
+			
+			
+			return $allanswerscontainer; 
+	}
+	
+	public function fetch_question_div($question, $tquiz,$modulecontext){
+			$q = $this->fetch_question_display($question, $tquiz,$modulecontext);
+			$q .= $this->fetch_answers_display($question, $tquiz,$modulecontext);
+			return html_writer::tag('div', $q, array('class'=>'mod_tquiz_qdiv','id'=>'tquiz_qdiv_' . $question->id));
 	}
 
 }

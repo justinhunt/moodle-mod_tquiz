@@ -49,7 +49,7 @@ $tabs = $row = $inactive = $activated = array();
 //$attemptscount = $DB->count_records('lesson_grades', array('lessonid'=>$lesson->id));
 $attemptscount = 0;
 
-$row[] = new tabobject('view', "$CFG->wwwroot/mod/tquiz/view.php?id=$cm->id", get_string('preview', 'tquiz'), get_string('previewtquiz', 'tquiz', format_string($tquiz->name)));
+$row[] = new tabobject('preview', "$CFG->wwwroot/mod/tquiz/view.php?id=$cm->id", get_string('preview', 'tquiz'), get_string('previewtquiz', 'tquiz', format_string($tquiz->name)));
 $row[] = new tabobject('edit', "$CFG->wwwroot/mod/tquiz/edit.php?id=$cm->id", get_string('edit', 'tquiz'), get_string('edita', 'moodle', format_string($tquiz->name)));
 $row[] = new tabobject('reports', "$CFG->wwwroot/mod/tquiz/reports.php?id=$cm->id", get_string('reports', 'tquiz'), get_string('viewreports', 'tquiz', $attemptscount));
 /*

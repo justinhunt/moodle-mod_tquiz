@@ -107,7 +107,7 @@ $renderer = $PAGE->get_renderer('mod_tquiz');
 
 //From here we actually display the page.
 //this is core renderer stuff
-$mode = "preview";
+$mode = "reports";
 echo $renderer->header($tquiz, $cm, $mode, null, get_string('reports', 'tquiz'));
 echo "<h1>This is gonna be good!</h1>";
 // Finish the page

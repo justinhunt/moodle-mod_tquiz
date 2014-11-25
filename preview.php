@@ -61,8 +61,6 @@ $PAGE->set_pagelayout('popup');
 	//Get an admin settings 
 	$config = get_config('mod_tquiz');
 
-
-
 //get our javascript all ready to go
 //We can omit $jsmodule, but its nice to have it here, 
 //if for example we need to include some funky YUI stuff
@@ -71,10 +69,20 @@ $jsmodule = array(
 	'fullpath' => '/mod/tquiz/module.js',
 	'requires' => array()
 );
-//here we set up any info we need to pass into javascript
+	
+//get our soundmanager library
+/*
+$require_js = '/filter/videoeasy/players/soundmanagerv297a/script/soundmanager2.js';
+$PAGE->requires->js(new moodle_url($require_js));
+//set it up and init it
+$soundopts = Array();
+$soundopts['swfurl']='/filter/videoeasy/players/soundmanagerv297a/swf/';
+//this inits the M.mod_tquiz thingy, after the page has loaded.
+$PAGE->requires->js_init_call('M.mod_tquiz.sm2.init', array($soundopts),false,$jsmodule);
+*/
+//here we set up any info we need for tquiz to pass into javascript
 $opts =Array();
-//$opts['someinstancesetting'] = $someinstancesetting;
-
+$opts['cmid']=$cm->id;
 
 //this inits the M.mod_tquiz thingy, after the page has loaded.
 $PAGE->requires->js_init_call('M.mod_tquiz.helper.init', array($opts),false,$jsmodule);
@@ -87,6 +95,7 @@ $mode = "preview";
 echo $renderer->previewheader();
 if($questionid){
 	echo $renderer->fetch_question_display($question, $tquiz,$modulecontext);
+	echo $renderer->fetch_answers_display($question, $tquiz,$modulecontext);
 }else{
 	echo 'nothing to preview';
 }

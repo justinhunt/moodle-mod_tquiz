@@ -14,4 +14,12 @@
 	height: 420px;
 }
 
-.path-mod-lesson .firstpageoptions {width:30%;margin-left:35%;margin-top:1em;}
+.mod_tquiz_qdiv{display: none;}
+.mod_tquiz_feedback{display: none; text-align: center;  margin-left: auto;margin-right: auto; width: 500px; padding-top: 5px}
+.mod_tquiz_intro{text-align: center;  margin-left: auto;margin-right: auto; width: 500px; padding-top: 5px}
+.mod_tquiz_bigbutton {font-size: 32px; height: 120px; width: 120px; text-align: center;}
+.mod_tquiz_bigbutton_container {text-align: center; display inline-block; float: left; padding-right: 20px}
+.mod_tquiz_bigbutton_container{height: 165px; margin-left: auto;margin-right: auto; width: 150px; padding-top: 5px}
+.mod_tquiz_allanswers_container{ text-align: center; height: 400px; margin-left: auto;margin-right: auto; width: 340px; padding-top: 25px}
+.mod_tquiz_questionbox{ text-align: center;  margin-left: auto;margin-right: auto; width: 500px; padding-top: 5px}
+.soundmanagerplayer{ text-align: center; display: block; margin-left: auto;margin-right: auto; width: 220px; padding-top: 5px}

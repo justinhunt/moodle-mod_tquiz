@@ -59,18 +59,47 @@ function xmldb_tquiz_upgrade($oldversion) {
         // Another save point reached
         upgrade_mod_savepoint(true, 2014111901, 'tquiz');
     }
+	
+	if ($oldversion < 2014112201) {
+        $table = new xmldb_table('tquiz_attempt');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+		$table->add_field('type', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('tquizid', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('status', XMLDB_TYPE_CHAR, 255, null, XMLDB_NOTNULL, null, null);
+		$table->add_field('score', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+		
+		$table = new xmldb_table('tquiz_attempt_log');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('attemptid', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('eventkey', XMLDB_TYPE_CHAR, 255, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('eventvalue', XMLDB_TYPE_CHAR, 255, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+    }
+	
+	if ($oldversion < 2014111902) {
 
- 
+        // Define field timecreated to be added to tquiz
+        $table = new xmldb_table('tquiz_attempt_log');
+        $field = new xmldb_field('questionid', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
 
-    // And that's all. Please, examine and understand the 3 example blocks above. Also
-    // it's interesting to look how other modules are using this script. Remember that
-    // the basic idea is to have "blocks" of code (each one being executed only once,
-    // when the module version (version.php) is updated.
+        // Add field timecreated
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
 
-    // Lines above (this included) MUST BE DELETED once you get the first version of
-    // yout module working. Each time you need to modify something in the module (DB
-    // related, you'll raise the version and add one upgrade block here.
+        // Another save point reached
+        upgrade_mod_savepoint(true, 2014111902, 'tquiz');
+    }
 
-    // Final return of upgrade result (true, all went good) to Moodle.
     return true;
 }
