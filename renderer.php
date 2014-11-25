@@ -51,7 +51,7 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		}
 		
 		//start button
-		$bigbuttonhtml = html_writer::tag('button','STARTY WARTY',  
+		$bigbuttonhtml = html_writer::tag('button','GO',  
 		array('class'=>'mod_tquiz_bigbutton yui3-button',
 		'id'=>'mod_tquiz_start_button','onclick'=>'M.mod_tquiz.helper.shownext()'));	
 		$bigbuttoncontainer = html_writer::tag('div', $bigbuttonhtml  
@@ -65,11 +65,18 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		 /**
      *
      */
-	public function fetch_feedback($tquiz,$cm){
+	public function fetch_feedback($tquiz,$cm, $context){
 		$ret = "";
 		if (trim(strip_tags($tquiz->feedback))) {
+		$edoptions = tquiz_fetch_editor_options($context);
+		//$edoptions = mod_tquiz_fetch_editor_options($COURSE,$context);
+		$feedbacktext  = file_rewrite_pluginfile_urls($tquiz->feedback, 'pluginfile.php', $context->id, 
+			'mod_tquiz', 'feedback', 0, 
+			$edoptions);
+		
+		
 			$ret .= $this->output->box_start('mod_introbox');
-			$ret .= format_text($tquiz->feedback);
+			$ret .= format_text($feedbacktext);
 			$ret .= $this->output->box_end();
 		}
 		

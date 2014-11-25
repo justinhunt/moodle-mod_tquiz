@@ -137,5 +137,5 @@ $mode = "preview";
 echo $renderer->header($tquiz, $cm, $mode, null, get_string('view', 'tquiz'));
 echo $renderer->fetch_intro($tquiz,$cm);
 echo $questiondivs;
-echo $renderer->fetch_feedback($tquiz,$cm);
+echo $renderer->fetch_feedback($tquiz,$cm,$modulecontext);
 echo $renderer->footer();
