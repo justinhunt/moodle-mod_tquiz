@@ -109,6 +109,7 @@ $renderer = $PAGE->get_renderer('mod_tquiz');
 //this is core renderer stuff
 $mode = "reports";
 echo $renderer->header($tquiz, $cm, $mode, null, get_string('reports', 'tquiz'));
-echo "<h1>This is gonna be good!</h1>";
+$attempts = $DB->get_records('tquiz_attempt',array('tquizid'=>$tquiz->id));
+echo $renderer->show_attempts_list($attempts,$tquiz,$cm);
 // Finish the page
 echo $renderer->footer();
