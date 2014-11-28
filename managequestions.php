@@ -120,8 +120,8 @@ $audiofilemanageroptions = mod_tquiz_fetch_filemanager_options($course,1);
 
 //get the mform for our question
 switch($qtype){
-	case MOD_TQUIZ_QTYPE_MULTICHOICE:
-		$mform = new tquiz_add_question_form_multichoice(null,
+	case MOD_TQUIZ_QTYPE_TEXTCHOICE:
+		$mform = new tquiz_add_question_form_textchoice(null,
 			array('editoroptions'=>$editoroptions, 
 			'audiofilemanageroptions'=>$audiofilemanageroptions)
 		);
@@ -166,7 +166,7 @@ if ($data = $mform->get_data()) {
 			$thequestion->timecreated=time();			
 			$thequestion->createdby=$USER->id;
 			switch($data->qtype){
-				case MOD_TQUIZ_QTYPE_MULTICHOICE:
+				case MOD_TQUIZ_QTYPE_TEXTCHOICE:
 					$maxanswers = 4;
 					for($i=1;$i<=$maxanswers;$i++){
 						$thequestion->{MOD_TQUIZ_TEXTANSWER . $i}='';
@@ -187,13 +187,14 @@ if ($data = $mform->get_data()) {
 								'mod_tquiz', MOD_TQUIZ_TEXTQUESTION_FILEAREA, $thequestion->id);
 		$thequestion->{MOD_TQUIZ_TEXTQUESTION} = $data->{MOD_TQUIZ_TEXTQUESTION} ;
 		$thequestion->{MOD_TQUIZ_TEXTQUESTION.'format'} = $data->{MOD_TQUIZ_TEXTQUESTION.'format'} ;
+		
+		//save question audio files
+		file_save_draft_area_files($data->{MOD_TQUIZ_AUDIOQUESTION}, $context->id, 'mod_tquiz', MOD_TQUIZ_AUDIOQUESTION_FILEAREA,
+			   $thequestion->id, $audiofilemanageroptions);
 					
 		//save files dependant on qtype
 		switch($data->qtype){
-			case MOD_TQUIZ_QTYPE_MULTICHOICE:
-				//save question audio files
-				file_save_draft_area_files($data->{MOD_TQUIZ_AUDIOQUESTION}, $context->id, 'mod_tquiz', MOD_TQUIZ_AUDIOQUESTION_FILEAREA,
-					   $thequestion->id, $audiofilemanageroptions);
+			case MOD_TQUIZ_QTYPE_TEXTCHOICE:
 				
 				// Save answer data
 				$maxanswers = 4;
@@ -248,30 +249,22 @@ if ($edit) {
     $data->id = $cm->id;
     $data = file_prepare_standard_editor($data, MOD_TQUIZ_TEXTQUESTION, $editoroptions, $context, 'mod_tquiz', 
 		MOD_TQUIZ_TEXTQUESTION_FILEAREA,  $data->questionid);	
+		
+	//prepare audio file areas
+	$draftitemid = file_get_submitted_draft_itemid(MOD_TQUIZ_AUDIOQUESTION);
+	file_prepare_draft_area($draftitemid, $context->id, 'mod_tquiz', MOD_TQUIZ_AUDIOQUESTION_FILEAREA, $data->questionid,
+						$audiofilemanageroptions);
+	$data->{MOD_TQUIZ_AUDIOQUESTION} = $draftitemid;
 	
 	//Set up the question type specific parts of the form data
 	switch($qtype){
-		case MOD_TQUIZ_QTYPE_MULTICHOICE:
-			//prepare audio file areas
-			$draftitemid = file_get_submitted_draft_itemid(MOD_TQUIZ_AUDIOQUESTION);
-			file_prepare_draft_area($draftitemid, $context->id, 'mod_tquiz', MOD_TQUIZ_AUDIOQUESTION_FILEAREA, $data->questionid,
-								$audiofilemanageroptions);
-			$data->{MOD_TQUIZ_AUDIOQUESTION} = $draftitemid;
+		case MOD_TQUIZ_QTYPE_TEXTCHOICE:
 			
-	
 			//prepare answer areas
 			$maxanswers = 4;
 			for($i=1;$i<=$maxanswers;$i++){
 				//text editor
 				$data = file_prepare_standard_editor($data, MOD_TQUIZ_TEXTANSWER . $i, $editoroptions, $context, 'mod_tquiz', MOD_TQUIZ_TEXTANSWER_FILEAREA . $i,  $data->questionid);
-				//audio editor
-				/*
-				$draftitemid = file_get_submitted_draft_itemid(MOD_TQUIZ_AUDIOANSWER . $i);
-				file_prepare_draft_area($draftitemid, $context->id, 'mod_tquiz', MOD_TQUIZ_AUDIOANSWER_FILEAREA . $i, $question->id,
-									$audiofilemanageroptions);
-				$data->{MOD_TQUIZ_AUDIOCONTENT . $i} = $draftitemid;
-				*/
-			
 			}
 			
 			break;

@@ -36,6 +36,7 @@ $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
 $questionid = optional_param('questionid', '', PARAM_TEXT); // eventkey
 $eventkey = optional_param('eventkey', '', PARAM_TEXT); // eventkey
 $eventvalue = optional_param('eventvalue', '', PARAM_TEXT); // eventkey
+$eventtime = optional_param('eventtime', 0, PARAM_INT); // eventkey
 
 //call so that we know we are who we said we are
 require_sesskey();
@@ -54,20 +55,41 @@ $context = context_module::instance($cm->id);
 global $DB,$USER;
 
 $result = false;
-$attempts = $DB->get_records('tquiz_attempt',array('tquizid'=>$tquiz->id, 'userid'=>$USER->id));//, 'id ASC'
-if($attempts){
-	$attempt = array_pop($attempts);
-	if($attempt->status!='complete'){
-		//add the log
-		$updatetime = time();
-		$log = new stdClass();
-		$log->attemptid = $attempt->id;
-		$log->questionid = $questionid;
-		$log->eventkey = $eventkey;
-		$log->eventvalue = $eventvalue;
-		$log->timecreated = $updatetime;
-		$result = $DB->insert_record('tquiz_attempt_log', $log);
+$updatetime = time();
+
+if($eventkey=='startquiz'){
+	$attempt = new stdClass();
+	$attempt->type=1;//what was this about?
+	$attempt->tquizid=$tquiz->id;
+	$attempt->userid=$USER->id;
+	$attempt->status='open';
+	$attempt->score=0;
+	$attempt->timecreated=$updatetime;
+	$attemptid = $DB->insert_record('tquiz_attempt',$attempt,true);
+	if($attemptid){
+		$attempt->id = $attemptid;
+	}else{
+		$attempt =false;
 	}
+}else{
+	$attempts = $DB->get_records('tquiz_attempt',array('tquizid'=>$tquiz->id, 'userid'=>$USER->id));//, 'id ASC'
+	if($attempts){
+		$attempt = array_pop($attempts);
+	}
+}
+
+if($attempt && $attempt->status=='open'){
+	//add the log
+	$log = new stdClass();
+	$log->attemptid = $attempt->id;
+	$log->tquizid = $attempt->tquizid;
+	$log->userid = $attempt->userid;
+	$log->questionid = $questionid;
+	$log->eventkey = $eventkey;
+	$log->eventvalue = $eventvalue;
+	$log->eventtime = $eventtime;
+	$log->timecreated = $updatetime;
+	$result = $DB->insert_record('tquiz_attempt_log', $log);
 }
 
 //check completion reqs against satisfied conditions

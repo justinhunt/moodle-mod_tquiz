@@ -45,12 +45,32 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		  		'class'=>'mod_tquiz_big_button yui3-button mod_tquiz_@@SIZECLASS@@_button','id'=>'mod_tquiz_@@ID@@_button@',
 		  		'src'=>$CFG->wwwroot . '/mod/tquiz/pix/@@IMGSRC@@.png', 'onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));
 				break;
+			
+			case 'toggle':
+			/*
+				$bigbuttonhtml = html_writer::tag('button','@@CAPTION@@',  
+				array('class'=>'mod_tquiz_togglebutton yui3-button mod_tquiz_@@SIZECLASS@@_button radio','value'=>'@@ANSWERINDEX@@',
+				'id'=>'mod_tquiz_@@ID@@_button','onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));	
+				break;
+			*/
+				$bigbuttonhtml  = html_writer::empty_tag('input', array('type'=>'image',
+		  		'class'=>'mod_tquiz_big_button yui3-button mod_tquiz_@@SIZECLASS@@_button radio','value'=>'@@ANSWERINDEX@@','id'=>'mod_tquiz_@@ID@@_button@',
+		  		'src'=>$CFG->wwwroot . '/mod/tquiz/pix/check.png', 'onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));
+				break;
 				
 			case 'text':
 				$bigbuttonhtml = html_writer::tag('button','@@CAPTION@@',  
 				array('class'=>'mod_tquiz_bigbutton yui3-button mod_tquiz_@@SIZECLASS@@_button',
 				'id'=>'mod_tquiz_@@ID@@_button','onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));	
 				break;
+				
+			case 'submit':
+				$bigbuttonhtml = html_writer::tag('button','@@CAPTION@@',  
+				array('class'=>'mod_tquiz_bigbutton yui3-button yui3-button-disabled mod_tquiz_@@SIZECLASS@@_button',
+				'id'=>'mod_tquiz_@@ID@@_button','onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));	
+				break;
+			
+			
 			
 			case 'audio':
 				$bigbuttonhtml  = html_writer::empty_tag('input', array('type'=>'image',
@@ -61,7 +81,7 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		}
 		
 		$bigbuttoncontainer = html_writer::tag('div', $bigbuttonhtml  
-					,array('class'=>'mod_tquiz_bigbutton_container'));
+					,array('class'=>'mod_tquiz_bigbutton_container mod_tquiz_bigbutton_@@SIZECLASS@@_container'));
 					
 		return $bigbuttoncontainer;
 	
@@ -81,7 +101,7 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		$gobutton = $this->fetch_bigbutton('text');
 		$gobutton = str_replace('@@CAPTION@@',get_string('startquiz','tquiz'),$gobutton);
 		$gobutton = str_replace('@@ID@@','tquiz' .$tquiz->id . '_',$gobutton);
-		$gobutton = str_replace('@@ONCLICK@@','shownext()',$gobutton);
+		$gobutton = str_replace('@@ONCLICK@@','startquiz()',$gobutton);
 		$gobutton = str_replace('@@SIZECLASS@@','start',$gobutton);
 		$ret .= $gobutton;
 		
@@ -176,9 +196,9 @@ class mod_tquiz_renderer extends plugin_renderer_base {
         $output = $this->output->heading(get_string("whatdonow", "tquiz"), 3);
         $links = array();
 
-        $addmultichoicequestionurl = new moodle_url('/mod/tquiz/managequestions.php',
-			array('id'=>$this->page->cm->id, 'questionid'=>$questionid, 'qtype'=>MOD_TQUIZ_QTYPE_MULTICHOICE));
-        $links[] = html_writer::link($addmultichoicequestionurl, get_string('addmultichoicequestion', 'tquiz'));
+        $addtextchoicequestionurl = new moodle_url('/mod/tquiz/managequestions.php',
+			array('id'=>$this->page->cm->id, 'questionid'=>$questionid, 'qtype'=>MOD_TQUIZ_QTYPE_TEXTCHOICE));
+        $links[] = html_writer::link($addtextchoicequestionurl, get_string('addtextchoicequestion', 'tquiz'));
         
         $addaudiochoicequestionurl = new moodle_url('/mod/tquiz/managequestions.php',
 			array('id'=>$this->page->cm->id, 'questionid'=>$questionid, 'qtype'=>MOD_TQUIZ_QTYPE_AUDIOCHOICE));
@@ -222,8 +242,8 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		
 			$questionnamecell = new html_table_cell($question->name);	
 			switch($question->qtype){
-				case MOD_TQUIZ_QTYPE_MULTICHOICE:
-					$questiontype = get_string('multichoice','tquiz');
+				case MOD_TQUIZ_QTYPE_TEXTCHOICE:
+					$questiontype = get_string('textchoice','tquiz');
 					break;
 				case MOD_TQUIZ_QTYPE_AUDIOCHOICE:
 					$questiontype = get_string('audiochoice','tquiz');
@@ -295,16 +315,26 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 				break;
 			}
 			if($audioplayer){
-				//$questionaudio =	$this->fetch_audio_button_player($audiourl,'question','question_' . $thequestion->id);
-				 $questionaudio = html_writer::tag('div', $audioplayer, array('class' => 'tquiz_questionaudio yui3-button soundmanagerplayer'));
+				$questionaudio =	$this->fetch_audio_button_player($audiourl,'question','question_' . $thequestion->id,$thequestion->id,0);
+				// $questionaudio = html_writer::tag('div', $audioplayer, array('class' => 'tquiz_questionaudio yui3-button soundmanagerplayer'));
 			}
 			
 			//return text + audio
-			return format_text($questiontext . $questionaudio);
+			$ret = format_text($questiontext);
+			//i know its horrible, just for now ...
+			$ret .= '<br/>' . $questionaudio;
+			return $ret;
 			
 	}
 	
-	function fetch_audio_button_player($audiolink,$profile, $id){
+	function fetch_toggle_button($questionid,$answerid){
+		global $CFG;
+		$bigbuttonhtml = $this->fetch_bigbutton('toggle');
+		return $bigbuttonhtml;
+		
+	}
+	
+	function fetch_audio_button_player($audiolink,$profile, $id,$questionid,$answerid){
 		global $CFG;
 
 		//'onclick'=>'M.mod_tquiz.helper.answerclick(@@QUESTIONID@@,@@ANSWERINDEX@@)'));	
@@ -315,13 +345,13 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 			case 'question':
 				$bigbuttonhtml  = str_replace('@@IMGSRC@@','questionplay',$bigbuttonhtml);
 				$bigbuttonhtml  = str_replace('@@ID@@',$id,$bigbuttonhtml);
-				$bigbuttonhtml  = str_replace('@@ONCLICK@@','answerclick(1)',$bigbuttonhtml);
+				$bigbuttonhtml  = str_replace('@@ONCLICK@@',"audio_question_click('". $id ."')",$bigbuttonhtml);
 				$bigbuttonhtml   = str_replace('@@SIZECLASS@@','audioquestion',$bigbuttonhtml);
 				break;
 			case 'answer':
-				$bigbuttonhtml  = str_replace('@@IMGSRC@@','questionplay',$bigbuttonhtml);
+				$bigbuttonhtml  = str_replace('@@IMGSRC@@','answerplay',$bigbuttonhtml);
 				$bigbuttonhtml  = str_replace('@@ID@@',$id,$bigbuttonhtml);
-				$bigbuttonhtml  = str_replace('@@ONCLICK@@','answerclick(1)',$bigbuttonhtml);
+				$bigbuttonhtml  = str_replace('@@ONCLICK@@',"audio_answer_click('". $id ."')",$bigbuttonhtml);
 				$bigbuttonhtml   = str_replace('@@SIZECLASS@@','audioanswer',$bigbuttonhtml);
 			default:
 				break;
@@ -329,7 +359,9 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		}
 		$sound= new stdClass();
 		$sound->id = $id;
-		$sound->url=$audiolink;
+		$sound->questionid = $questionid;
+		$sound->answerid = $answerid;
+		$sound->url=$audiolink->out();
 		$jsonsound =  json_encode($sound);
 		$js='if(!m_mod_tquiz_sm2_sounds){var m_mod_tquiz_sm2_sounds = new Array();} m_mod_tquiz_sm2_sounds.push('.$jsonsound.');';
 		$bigbuttonhtml .= html_writer::tag('script', $js ,array('type'=>'text/javascript'));
@@ -354,9 +386,10 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 			$answers = array();
 			foreach($aindexes as $aindex){
 				switch($thequestion->qtype){
-					case MOD_TQUIZ_QTYPE_MULTICHOICE:
+					case MOD_TQUIZ_QTYPE_TEXTCHOICE:
 						$theanswer = str_replace('@@CAPTION@@',$thequestion->{'answertext' . $aindex},$bigbuttontemplate);
-						$theanswer = str_replace('@@ONCLICK@@','answerclick(' . $thequestion->id . ',' . $aindex . ')',$theanswer);
+						$theanswer  = str_replace('@@ID@@','textanswerbutton_' . $thequestion->id . '_' . $aindex,$theanswer);
+						$theanswer = str_replace('@@ONCLICK@@','text_answer_click(' . $thequestion->id . ',' . $aindex . ')',$theanswer);
 						$theanswer = str_replace('@@ANSWERINDEX@@','answer' . $aindex . '_',$theanswer);
 						$theanswer = str_replace('@@SIZECLASS@@','shorttextanswer',$theanswer);
 						$answers[] =$theanswer;
@@ -374,11 +407,19 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 									MOD_TQUIZ_AUDIOANSWER_FILEAREA . $aindex, $thequestion->id,
 									$filepath, $filename);
 							//$audioplayer = html_writer::link($audiourl, $filename);
-							$audioplayer =	$this->fetch_audio_button_player($audiourl,'answer','answer_' . $thequestion->id . '_' . $aindex);
+							$audioplayer =	$this->fetch_audio_button_player($audiourl,'answer','audioanswerplayer_' . $thequestion->id . '_' . $aindex,$thequestion->id,$aindex);
+							
+							$togglebutton= $this->fetch_toggle_button($thequestion->id, $aindex);
+							$togglebutton = str_replace('@@CAPTION@@','ok',$togglebutton);
+							$togglebutton = str_replace('@@ID@@','audioanswerbutton_' . $thequestion->id . '_' . $aindex,$togglebutton);
+							$togglebutton = str_replace('@@ONCLICK@@','donothing()',$togglebutton);
+							$togglebutton = str_replace('@@ANSWERINDEX@@', $aindex ,$togglebutton);
+							$togglebutton = str_replace('@@SIZECLASS@@','selectaudioanswer',$togglebutton);
+							
 							break;
 						}
 						if($audioplayer){
-							$answers[] =  html_writer::tag('div', $audioplayer, array('class' => 'tquiz_answeraudio'));
+							$answers[] =  html_writer::tag('div', $audioplayer . $togglebutton, array('class' => 'mod_tquiz_answeraudio'));
 						}
 						break;
 					default:
@@ -388,11 +429,33 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 			$allanswers =  implode(' ',$answers);
 			
 			//put a bounding box around the buttons to force them into a 2 x 2 centered grid
-			$allanswerscontainer = html_writer::tag('div', $allanswers  
-			,array('class'=>'mod_tquiz_allanswers_container'));
+			switch($thequestion->qtype){
+					case MOD_TQUIZ_QTYPE_TEXTCHOICE:
+						$qtypeclass = 'mod_tquiz_allanswers_texttype_container';
+						$submitbutton ='';
+						break;
+					case MOD_TQUIZ_QTYPE_AUDIOCHOICE:
+						$qtypeclass = 'mod_tquiz_allanswers_audiotype_container mod_tquiz_togglegroup';
+						
+						$submitbutton = $bigbuttoncontainer = $this->fetch_bigbutton('submit');
+						$submitbutton = str_replace('@@CAPTION@@',get_string('ok','tquiz'),$submitbutton);
+						$submitbutton  = str_replace('@@ID@@','submitbutton_' . $thequestion->id,$submitbutton);
+						$submitbutton = str_replace('@@ONCLICK@@','submitbutton_click(' . $thequestion->id . ')',$submitbutton);
+						$submitbutton = str_replace('@@SIZECLASS@@','submitanswer',$submitbutton);
+						break;
+			}
 			
+			$allanswerscontainer = html_writer::tag('div', $allanswers 
+			,array('class'=>'mod_tquiz_allanswers_container ' . $qtypeclass ,'id'=>'mod_tquiz_allanswers_container_' . $thequestion->id));
 			
-			return $allanswerscontainer; 
+			//add submit button
+			$allanswerscontainer .= $submitbutton;
+			
+			//hidden answers div
+			$hiddenanswerscontainer = html_writer::tag('div','' ,array('class'=>'mod_tquiz_hiddenanswers_container',
+				'id'=>'mod_tquiz_hiddenanswers_container_' . $thequestion->id));
+			
+			return $hiddenanswerscontainer . $allanswerscontainer; 
 	}
 	
 	public function fetch_question_div($question, $tquiz,$modulecontext){

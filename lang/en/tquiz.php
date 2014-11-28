@@ -30,7 +30,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['modulename'] = 'tquiz';
-$string['modulenameplural'] = 'tquizs';
+$string['modulenameplural'] = 'tquizzes';
 $string['modulename_help'] = 'tquiz help';
 $string['tquizfieldset'] = 'Custom example fieldset';
 $string['tquizname'] = 'tquiz name';
@@ -59,11 +59,11 @@ $string['viewreports'] = 'View {$a} completed attempts';
 $string['previewtquiz'] = 'Preview {$a}';
 $string['whatdonow'] = 'What would you like to do?';
 $string['addnewquestion'] = 'Add a New Question';
-$string['addmultichoicequestion'] = 'Add Multichoice Question';
+$string['addtextchoicequestion'] = 'Add Textchoice Question';
 $string['addaudiochoicequestion'] = 'Add Audiochoice Question';
 $string['addingquestion'] = 'Adding a New Question';
 $string['editingquestion'] = 'Editing a Question';
-$string['multichoice'] = 'Multichoice';
+$string['textchoice'] = 'Textchoice';
 $string['audiochoice'] = 'Audiochoice';
 $string['cannotdeleteanswers'] = 'Could not delete/update answers for the question';
 $string['createaquestion'] = 'Create a Question';
@@ -82,3 +82,4 @@ $string['deletequestion'] = 'Delete Question';
 $string['confirmquestiondelete'] = 'Are you sure you want to <i>DELETE</i> Question? : {$a}';
 $string['confirmquestiondeletetitle'] = 'Really Delete Question?';
 $string['no questions'] = 'This quiz contains no questins';
+$string['ok'] = '  OK >>';

@@ -124,14 +124,30 @@ foreach($questions as $question){
 $jsmodule = array(
 	'name'     => 'mod_tquiz',
 	'fullpath' => '/mod/tquiz/module.js',
-	'requires' => array()
+	'requires' => array('transition','button','button-group')
 );
 $opts =Array();
 $opts['cmid']=$cm->id;
 $opts['quids']=$questionids;
+$opts['preview']=false;
+$opts['a_trans_time']=0.5;
+$opts['q_trans_time']=2;
 
 //this inits the M.mod_tquiz thingy, after the page has loaded.
 $PAGE->requires->js_init_call('M.mod_tquiz.helper.init', array($opts,$questionids),false,$jsmodule);
+
+
+//get our soundmanager library
+//===========================================
+$require_js = '/filter/videoeasy/players/soundmanagerv297a/script/soundmanager2.js';
+$PAGE->requires->js(new moodle_url($require_js));
+//set it up and init it
+$soundopts = Array();
+$soundopts['swfurl']='/filter/videoeasy/players/soundmanagerv297a/swf/';
+//this inits the M.mod_tquiz thingy, after the page has loaded.
+$PAGE->requires->js_init_call('M.mod_tquiz.sm2.init', array($soundopts),false,$jsmodule);
+//===========================================
+
 
 $mode = "preview";
 echo $renderer->header($tquiz, $cm, $mode, null, get_string('view', 'tquiz'));
