@@ -191,6 +191,19 @@ M.mod_tquiz.helper = {
 		this.shownext();
 	},
 	
+	selectaudioanswer_click: function(questionid,answerid){
+		this.currenta = answerid;
+		var togglebuttons = this.Y.all('.mod_tquiz_selectaudioanswer_button');
+		togglebuttons.each(function(thebutton) { 
+				thebutton.removeClass('mod_tquiz_selectedbutton');
+			}
+		)
+		var thebutton = Y.one('#mod_tquiz_audioanswer' + questionid +'_' + answerid + '_button');
+		thebutton.addClass('mod_tquiz_selectedbutton');
+
+	},
+	
+	
     logevent: function(questionid, eventkey, eventvalue){
     	var Y = this.Y;
 		var opts = this.opts;

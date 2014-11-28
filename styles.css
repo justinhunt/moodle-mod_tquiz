@@ -12,6 +12,9 @@
 
 .mod_tquiz_answeraudio {margin-left: auto;margin-right: auto; padding-top: 5px; width: 400px}
 
+/*.mod_tquiz_togglebutton {background-image: url('/mod/tquiz/pix/check.png');}*/
+.mod_tquiz_selectedbutton{background-image: null; background-color: #0000FF};
+
 .mod_tquiz_bigbutton {font-size: 32px; text-align: center;}
 .mod_tquiz_selectaudioanswer_button {width: 120px; height: 100px;}
 .mod_tquiz_shorttextanswer_button {width: 150px; height: 120px;}

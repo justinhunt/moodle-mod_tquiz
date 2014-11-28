@@ -53,10 +53,12 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 				'id'=>'mod_tquiz_@@ID@@_button','onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));	
 				break;
 			*/
+			
 				$bigbuttonhtml  = html_writer::empty_tag('input', array('type'=>'image',
-		  		'class'=>'mod_tquiz_big_button yui3-button mod_tquiz_@@SIZECLASS@@_button radio','value'=>'@@ANSWERINDEX@@','id'=>'mod_tquiz_@@ID@@_button@',
+		  		'class'=>'mod_tquiz_big_button yui3-button mod_tquiz_@@SIZECLASS@@_button radio','value'=>'@@ANSWERINDEX@@','id'=>'mod_tquiz_@@ID@@_button',
 		  		'src'=>$CFG->wwwroot . '/mod/tquiz/pix/check.png', 'onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));
 				break;
+				
 				
 			case 'text':
 				$bigbuttonhtml = html_writer::tag('button','@@CAPTION@@',  
@@ -410,9 +412,11 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 							$audioplayer =	$this->fetch_audio_button_player($audiourl,'answer','audioanswerplayer_' . $thequestion->id . '_' . $aindex,$thequestion->id,$aindex);
 							
 							$togglebutton= $this->fetch_toggle_button($thequestion->id, $aindex);
-							$togglebutton = str_replace('@@CAPTION@@','ok',$togglebutton);
-							$togglebutton = str_replace('@@ID@@','audioanswerbutton_' . $thequestion->id . '_' . $aindex,$togglebutton);
-							$togglebutton = str_replace('@@ONCLICK@@','donothing()',$togglebutton);
+							//$togglebutton = str_replace('@@CAPTION@@','ok',$togglebutton);
+							$togglebutton = str_replace('@@CAPTION@@','',$togglebutton);
+							$togglebutton = str_replace('@@ID@@','audioanswer' . $thequestion->id . '_' . $aindex,$togglebutton);
+							$togglebutton = str_replace('@@ONCLICK@@','selectaudioanswer_click('. $thequestion->id . ','. $aindex. ')',$togglebutton);
+							//$togglebutton = str_replace('@@ONCLICK@@','donothing('. $thequestion->id . ','. $aindex. ')',$togglebutton);
 							$togglebutton = str_replace('@@ANSWERINDEX@@', $aindex ,$togglebutton);
 							$togglebutton = str_replace('@@SIZECLASS@@','selectaudioanswer',$togglebutton);
 							
