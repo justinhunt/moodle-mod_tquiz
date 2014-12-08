@@ -72,12 +72,16 @@ class mod_tquiz_mod_form extends moodleform_mod {
 
 		
         //-------------------------------------------------------------------------------
-        // Adding the rest of tquiz settings, spreeading all them into this fieldset
-        // or adding more fieldsets ('header' elements) if needed for better logic
-        $mform->addElement('static', 'label1', 'tquizsettings', get_string('tquizsettings', 'tquiz'));
-        $mform->addElement('text', 'someinstancesetting', get_string('someinstancesetting', 'tquiz'), array('size'=>'64'));
-        $mform->addRule('someinstancesetting', null, 'required', null, 'client');
-        $mform->setType('someinstancesetting', PARAM_TEXT);
+        // Adding the tquiz time limit field
+         $mform->addElement('duration', 'timelimit', get_string('timelimit', 'tquiz')); 
+		 $mform->addElement('selectyesno', 'shufflequestions', get_string('shufflequestions', 'tquiz'));
+
+		//
+        $mform->addElement('select', 'attemptsallowed', get_string('attemptsallowed', 'tquiz'), array('size'=>'5'));
+        $mform->setType('attemptsallowed', PARAM_INT);
+		$mform->setDefault('attemptsallowed', '1');
+        $mform->addRule('attemptsallowed', null, 'required', null, 'client');
+
 
         //-------------------------------------------------------------------------------
         // add standard elements, common to all modules

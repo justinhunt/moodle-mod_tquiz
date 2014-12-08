@@ -178,11 +178,18 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 
         return $output;
     }
+	
+	public function fetch_countdowntimer() {
+		return html_writer::tag('div', get_string('timeleft', 'tquiz') . ' ' .
+			html_writer::tag('span', '', array('id' => 'tquiz-time-left')),
+			array('id' => 'tquiz-timer', 'role' => 'timer',
+				'aria-atomic' => 'true', 'aria-relevant' => 'text'));
+	}
     
     /**
      * Return HTML to display limited header
      */
-      public function previewheader(){
+      public function notabsheader(){
       	return $this->output->header();
       }
 	
@@ -430,7 +437,8 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 	function fetch_question_display($thequestion,$tquiz, $context){
 			global $COURSE;
 			//get question text div (easy)
-			$questiontext  = html_writer::tag('div', $thequestion->{MOD_TQUIZ_TEXTQUESTION}, array('class' => 'mod_tquiz_questionbox'));
+			$questiontext  = html_writer::tag('div',get_string('question','tquiz'), array('class' => 'mod_tquiz_questionheading'));
+			$questiontext  .= html_writer::tag('div', $thequestion->{MOD_TQUIZ_TEXTQUESTION}, array('class' => 'mod_tquiz_questionbox'));
 			$questiontext  = file_rewrite_pluginfile_urls($questiontext, 'pluginfile.php', $context->id, 
 			'mod_tquiz', MOD_TQUIZ_TEXTQUESTION_FILEAREA, $thequestion->id, 
 			mod_tquiz_fetch_editor_options($COURSE,$context));
@@ -468,6 +476,10 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		$bigbuttonhtml = $this->fetch_bigbutton('toggle');
 		return $bigbuttonhtml;
 		
+	}
+	
+	function fetch_progressbar(){
+		return html_writer::tag('div','', array('class' => 'mod_tquiz_progressbar', 'id'=> 'mod_tquiz_progressbar'));
 	}
 	
 	function fetch_audio_button_player($audiolink,$profile, $id,$questionid,$answerid){
@@ -564,6 +576,11 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 				} 			
 			}//end of for each
 			
+			//if we need to shuffle .... ok
+			if($thequestion->shuffleanswers){
+				shuffle($answers);
+			}
+			//turn array into string
 			$allanswers =  implode(' ',$answers);
 			
 			//put a bounding box around the buttons to force them into a 2 x 2 centered grid
@@ -593,7 +610,8 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 			$hiddenanswerscontainer = html_writer::tag('div','' ,array('class'=>'mod_tquiz_hiddenanswers_container',
 				'id'=>'mod_tquiz_hiddenanswers_container_' . $thequestion->id));
 			
-			return $hiddenanswerscontainer . $allanswerscontainer; 
+			$answersheading = html_writer::tag('div',get_string('answers','tquiz'), array('class' => 'mod_tquiz_answersheading'));
+			return $answersheading . $hiddenanswerscontainer . $allanswerscontainer; 
 	}
 	
 	public function fetch_question_div($question, $tquiz,$modulecontext){

@@ -1,46 +1,198 @@
 
 .mod_tquiz_qdiv{display: none; opacity: 0;}
-.mod_tquiz_feedback{display: none; text-align: center;  margin-left: auto;margin-right: auto; width: 500px; padding-top: 5px}
-.mod_tquiz_intro{text-align: center;  margin-left: auto;margin-right: auto; width: 500px; padding-top: 5px}
 
-.mod_tquiz_start_button {width: 400px; height: 120px;}
-.mod_tquiz_bigbutton_start_container {width:100%; margin-left: auto; margin-right: auto; display: block;}
-.mod_tquiz_audioquestion_button  {width: 300px; height: 120px;}
-.mod_tquiz_bigbutton_audioquestion_container{width:100%; margin-left: auto; margin-right: auto; margin-bottom: 25px; display: block;}
-.mod_tquiz_submitanswer_button {width: 300px; height: 120px; }
-.mod_tquiz_bigbutton_submitanswer_container{width:100%; margin-left: auto; margin-right: auto; display: block;}
+.mod_tquiz_answersheading{
+	text-align: left;
+	font-size: large;
+	font-weight: bold;
+}
 
-.mod_tquiz_answeraudio {margin-left: auto;margin-right: auto; padding-top: 5px; width: 400px}
+.mod_tquiz_questionheading{
+	text-align: left;
+	font-size: large;
+	font-weight: bold;
+}
+
+
+.mod_tquiz_feedback{
+	display: none; 
+	text-align: left;
+/*	
+	margin-left: auto;
+	margin-right: auto;
+*/	
+	width: 500px; 
+	padding-top: 5px
+}
+
+.mod_tquiz_intro{
+	text-align: left;  
+	/*
+	margin-left: auto;
+	margin-right: auto;
+	*/
+	width: 500px; 
+	padding-top: 5px;
+}
+
+.mod_tquiz_start_button {width: 400px; height: 80px; font-size: xx-large;}
+
+.mod_tquiz_bigbutton_start_container {
+	width:100%; 
+	/*
+	margin-left: auto; 
+	margin-right: auto; 
+	*/
+	display: block;
+	}
+
+input[type="image"].mod_tquiz_audioquestion_button  {
+	width: 380px; 
+	height: 70px;
+}
+
+.mod_tquiz_bigbutton_audioquestion_container{
+	width:100%;
+		/*
+	margin-left: auto; 
+	margin-right: auto; 
+	*/
+	margin-bottom: 25px; 
+	display: block;
+}
+	
+
+.yui3-button.mod_tquiz_submitanswer_button {
+	width: 400px; 
+	height: 80px; 
+	font-size: x-large;
+	background-color: chartreuse;
+	font-weight: bold;
+	}
+
+.yui3-button:hover.mod_tquiz_submitanswer_button {
+	background-color: chartreuse;
+}
+.yui3-button:active.mod_tquiz_submitanswer_button {
+	background-color: chartreuse;
+}
+	
+.yui3-button-disabled.mod_tquiz_submitanswer_button,
+.yui3-button-disabled:hover.mod_tquiz_submitanswer_button,
+.yui3-button-disabled:active.mod_tquiz_submitanswer_button {
+	background-color: #DDDDDD;
+}
+
+.mod_tquiz_bigbutton_submitanswer_container{
+	width:100%; 
+	/*
+	margin-left: auto; 
+	margin-right: auto; 
+	*/
+	display: block;
+}
+
+.mod_tquiz_answeraudio {
+	/*
+	margin-left: auto;
+	margin-right: auto; 
+	*/
+	padding-top: 5px; 
+	display: block; 
+	width: 310px;
+}
 
 /*.mod_tquiz_togglebutton {background-image: url('/mod/tquiz/pix/check.png');}*/
 .mod_tquiz_selectedbutton{background-image: null; background-color: #0000FF};
 
 .mod_tquiz_bigbutton {font-size: 32px; text-align: center;}
-.mod_tquiz_selectaudioanswer_button {width: 120px; height: 100px;}
-.mod_tquiz_shorttextanswer_button {width: 150px; height: 120px;}
-.mod_tquiz_mediumtextanswer_button {width: 300px; height: 120px;}
+.mod_tquiz_selectaudioanswer_button {width: 90px; height: 70px;}
+.mod_tquiz_shorttextanswer_button {width: 150px; height: 120px; font-size: x-large}
+.mod_tquiz_mediumtextanswer_button {width: 300px; height: 120px; font-size: large}
 .mod_tquiz_longtextanswer_button {width: 500px; height: 120px;}
-.mod_tquiz_audioanswer_button  {width: 100px; height: 100px;}
-.mod_tquiz_bigbutton_container {text-align: center; display inline-block; float: left; padding-right: 20px} 
+.mod_tquiz_audioanswer_button  {width: 70px; height: 70px;}
+.mod_tquiz_bigbutton_container {
+/* text-align: center; */ 
+float: left; 
+padding-right: 20px;
+} 
+
 .mod_tquiz_bigbutton_container{margin-left: auto;margin-right: auto; padding-top: 5px}
 .mod_tquiz_bigbutton__container{margin-left: auto;margin-right: auto; padding-top: 5px} 
 
 .mod_tquiz_hiddenanswers_container{
-	background-color: #CCCCCC; 
-	border:1px;
+	background-color: #EEEEEE; 
+	border: 0px;
 	border-color: #FF0000;
 	border-style: dashed;
 	text-align: center; 
-	height: 200px; 
+	height: 300px; 
+	/* 
 	margin-left: auto;
 	margin-right: auto; 
-	width: 400px; 
+	*/
+	width: 405px; 
 	padding-top: 25px;
 	display: flex;
 	}
 	
-.mod_tquiz_allanswers_container{ text-align: center; height: 400px; margin-left: auto;margin-right: auto; width: 400px; padding-top: 25px;}
-.mod_tquiz_allanswers_audiotype_container{display: none;}
-.mod_tquiz_allanswers_texttype_container{display: none;}
-.mod_tquiz_questionbox{ text-align: center;  margin-left: auto;margin-right: auto; width: 500px; padding-top: 5px}
+#mod_tquiz_progressbar{ 
+	text-align: center; 
+	width: 400px;
+	height: 80px;
+	padding-top: 100px;
+	font-weight: bold;
+	font-style: italic;
+}	
+	
+.mod_tquiz_allanswers_container{ 
+	text-align: center; 
+/*	margin-left: auto;
+	margin-right: auto; 
+*/	
+	width: 400px; 
+	padding-top: 25px;
+}
+
+
+
+.mod_tquiz_allanswers_audiotype_container{
+display: none;
+height: 400px;
+}
+.mod_tquiz_allanswers_texttype_container{
+display: none;
+height: 300px;
+}
+.mod_tquiz_questionbox{ 
+text-align: left;  
+/*
+margin-left: auto;
+margin-right: auto;
+*/
+width: 500px; 
+padding-top: 5px
+}
+
+
 .soundmanagerplayer{ text-align: center; display: block; margin-left: auto;margin-right: auto; width: 220px; padding-top: 5px}
+
+#tquiz-timer {display: none; margin-top: 1em;} 
+#tquiz-time-left {font-weight: bold;}
+#tquiz-timer.timeleft15 {background: #ffffff;}
+#tquiz-timer.timeleft14 {background: #eeffee;}
+#tquiz-timer.timeleft13 {background: #ddffdd;}
+#tquiz-timer.timeleft12 {background: #ccffcc;}
+#tquiz-timer.timeleft11 {background: #bbffbb;}
+#tquiz-timer.timeleft10 {background: #aaffaa;}
+#tquiz-timer.timeleft9 {background: #99ff99;}
+#tquiz-timer.timeleft8 {background: #88ff88;}
+#tquiz-timer.timeleft7 {background: #77ff77;}
+#tquiz-timer.timeleft6 {background: #66ff66;}
+#tquiz-timer.timeleft5 {background: #55ff55;}
+#tquiz-timer.timeleft4 {background: #44ff44;}
+#tquiz-timer.timeleft3 {background: #33ff33;}
+#tquiz-timer.timeleft2 {background: #22ff22;}
+#tquiz-timer.timeleft1 {background: #11ff11;}
+#tquiz-timer.timeleft0 {background: #00ff00;}
+#tquiz-timer {text-align: center; margin-top: 1em;}

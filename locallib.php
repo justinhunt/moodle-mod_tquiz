@@ -46,6 +46,51 @@ defined('MOODLE_INTERNAL') || die();
         return $question;
    }
    
+   function mod_tquiz_delete_question($tquiz, $questionid, $context) {
+		global $DB;
+		$ret = false;
+		$qlogs = $DB->get_records("tquiz_attempt_log",array("tquizid"=>$tquiz->id,'questionid'=>$questionid));
+        if ($qlogs){
+            if(!$DB->delete_records("tquiz_attempt_log",array("tquizid"=>$tquiz->id,'questionid'=>$questionid))){
+                print_error("Could not delete logs for this question");
+				return $ret;
+            }
+            //must be a better way than this, ... later
+            $attemptids=array();
+            foreach($qlogs as $qlog){
+            	if(!array_key_exists($qlog->attemptid,$attemptids)){
+            		$attemptids[$qlog->attemptid]=0; 
+            		$DB->delete_records("tquiz_attempt",array('id'=>$qlog->attemptid));
+            	}
+            }
+        }
+        
+
+        if (!$DB->delete_records("tquiz_questions", array('id'=>$questionid))){
+            print_error("Could not delete question");
+			return $ret;
+        }
+		//remove files
+		$fs= get_file_storage();
+		
+		$fileareas = array(MOD_TQUIZ_TEXTQUESTION_FILEAREA,
+		MOD_TQUIZ_TEXTANSWER_FILEAREA . '1',
+		MOD_TQUIZ_TEXTANSWER_FILEAREA . '2',
+		MOD_TQUIZ_TEXTANSWER_FILEAREA . '3',
+		MOD_TQUIZ_TEXTANSWER_FILEAREA . '4',
+		MOD_TQUIZ_AUDIOQUESTION_FILEAREA,
+		MOD_TQUIZ_AUDIOANSWER_FILEAREA . '1',
+		MOD_TQUIZ_AUDIOANSWER_FILEAREA . '2',
+		MOD_TQUIZ_AUDIOANSWER_FILEAREA . '3',
+		MOD_TQUIZ_AUDIOANSWER_FILEAREA . '4');
+		foreach ($fileareas as $filearea){
+			$fs->delete_area_files($context->id,'mod_tquiz',$filearea,$questionid);
+		}
+		$ret = true;
+		return $ret;
+   } 
+   
+   
    function mod_tquiz_add_question($formdata, $tquiz) {
         global $DB;
         $newquestion = new stdClass;
@@ -55,6 +100,7 @@ defined('MOODLE_INTERNAL') || die();
         $newquestion->tquiz = $tquiz->id;
         $newquestion->timecreated = time();
         $newquestion->qtype = $formdata->qtype;
+		$newquestion->shuffleanswers = $formdata->shuffleanswers;
         $newquestion->qoption = (isset($formdata->qoption))?1:0;
         $newquestion->layout = (isset($formdata->layout))?1:0;
         $newquestion->display = (isset($formdata->display))?1:0;
@@ -97,7 +143,7 @@ defined('MOODLE_INTERNAL') || die();
 
         return $question;
     }
-	
+	/*
 	function mod_tquiz_update_answers($formdata, $questionid) {
         global $DB;
 
@@ -126,7 +172,7 @@ defined('MOODLE_INTERNAL') || die();
         
         return $question;
     }
-	
+	*/
 	function mod_tquiz_fetch_editor_options($course, $modulecontext){
 		$maxfiles=99;
 		$maxbytes=$course->maxbytes;

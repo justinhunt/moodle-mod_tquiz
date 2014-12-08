@@ -79,6 +79,9 @@ if($action == 'confirmdelete'){
 	require_sesskey();
 	if (!$DB->delete_records("tquiz_attempt", array('id'=>$attemptid))){
 		print_error("Could not delete attempt");
+		if (!$DB->delete_records("tquiz_attempt_log", array('attemptid'=>$attemptid))){
+			print_error("Could not delete logs");
+		}
 	}
 
 	redirect($redirecturl);

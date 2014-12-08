@@ -80,14 +80,23 @@ $redirecturl = new moodle_url('/mod/tquiz/edit.php', array('id'=>$cm->id));
 	/////// Delete Question NOW////////
     }elseif ($action == 'delete'){
     	require_sesskey();
-		//later we will need to delete from the attempts table
 		/*
-        if ($DB->count_records("tquiz_attempts",array("tquiz"=>$tquiz->id,'question'=>$questionid))){
-            if(!$DB->delete_records("tquiz_attempts",array("tquiz"=>$tquiz->id,'question'=>$questionid))){
-                print_error("Could not delete attempts for this question");
+		//later we will need to delete from the attempts table
+		$qlogs = $DB->get_records("tquiz_attempt_log",array("tquizid"=>$tquiz->id,'questionid'=>$questionid));
+        if ($qlogs){
+            if(!$DB->delete_records("tquiz_attempt_log",array("tquizid"=>$tquiz->id,'question'=>$questionid))){
+                print_error("Could not delete logs for this question");
+            }
+            //must be a better way than this, ... later
+            $attemptids=array();
+            foreach($qlogs as $qlog){
+            	if(!array_key_exists($qlog->attemptid,$attemptids)){
+            		$attemptids[$qlog->attemptid]=0; 
+            		$DB->delete_records("tquiz_attempt",array('id'=>$qlog->attemptid));
+            	}
             }
         }
-        */
+        
 
         if (!$DB->delete_records("tquiz_questions", array('id'=>$questionid))){
             print_error("Could not delete question");
@@ -108,6 +117,8 @@ $redirecturl = new moodle_url('/mod/tquiz/edit.php', array('id'=>$cm->id));
 		foreach ($fileareas as $filearea){
 			$fs->delete_area_files($context->id,'mod_tquiz',$filearea,$questionid);
 		}
+		*/
+		$success = mod_tquiz_delete_question($tquiz,$questionid,$context);
         redirect($redirecturl);
 	
     }
@@ -153,6 +164,8 @@ if ($data = $mform->get_data()) {
 		$thequestion->visible = $data->visible;
 		$thequestion->order = $data->order;
 		$thequestion->qtype = $data->qtype;
+		$thequestion->shuffleanswers = $data->shuffleanswers;
+		$thequestion->correctanswer = $data->correctanswer;
 		$thequestion->name = $data->name;
 		$thequestion->modifiedby=$USER->id;
 		$thequestion->timemodified=time();

@@ -43,6 +43,8 @@ define('MOD_TQUIZ_TEXTQUESTION', 'questiontext');
 define('MOD_TQUIZ_TEXTANSWER', 'answertext');
 define('MOD_TQUIZ_TEXTQUESTION_FILEAREA', 'questionarea');
 define('MOD_TQUIZ_TEXTANSWER_FILEAREA', 'answerarea');
+define('MOD_TQUIZ_CORRECTANSWER','correctanswer');
+define('MOD_TQUIZ_SHUFFLEANSWERS','shuffleanswers');
 
 /**
  * Abstract class that question type's inherit from.
@@ -216,6 +218,37 @@ abstract class tquiz_add_question_form_base extends moodleform {
             $this->_form->addRule(MOD_TQUIZ_TEXTANSWER . $count . '_editor', get_string('required'), 'required', null, 'client');
         }
     }
+
+	  /**
+     * Convenience function: Adds correct/incorrect attribute
+     *
+     * @param int $count The count of the element to add
+     * @param string $label, null means default
+     * @return void
+     */
+    protected final function add_shuffleanswers($label = null) {
+        if ($label === null) {
+            $label = get_string('shuffleanswers', 'tquiz');
+        }
+        $this->_form->addElement('selectyesno', MOD_TQUIZ_SHUFFLEANSWERS, $label);
+        $this->_form->setDefault(MOD_TQUIZ_SHUFFLEANSWERS, 0);
+    }
+	 
+	 /**
+     * Convenience function: Adds correct/incorrect attribute
+     *
+     * @param int $count The count of the element to add
+     * @param string $label, null means default
+     * @return void
+     */
+    protected final function add_correctanswer($count, $label = null) {
+        if ($label === null) {
+            $label = get_string('iscorrectlabel', 'tquiz');
+        }
+        $this->_form->addElement('radio', MOD_TQUIZ_CORRECTANSWER, $label,'',$count);
+        $this->_form->setDefault(MOD_TQUIZ_CORRECTANSWER, 1);
+    }
+	
     /**
      * Convenience function: Adds an response editor
      *
@@ -263,10 +296,14 @@ class tquiz_add_question_form_textchoice extends tquiz_add_question_form_base {
 		*/
 		
 		$this->add_audio_question_upload(get_string('audioquestionfile','tquiz'));
+		$this->add_shuffleanswers();
+		
 		$maxanswers = 4;
         for ($i = 1; $i <= $maxanswers; $i++) {
             $this->_form->addElement('header', 'answertitle'.$i, get_string('answer').' '. $i);
             $this->add_answer($i, null, true);
+			$this->add_correctanswer($i);
+			
            // $this->add_response($i);
            // $this->add_score($i, null, ($i===0)?1:0);
         }
@@ -283,10 +320,13 @@ class tquiz_add_question_form_audiochoice extends tquiz_add_question_form_base {
     public function custom_definition() {
 	
 		$this->add_audio_question_upload(get_string('audioquestionfile','tquiz'));
+		$this->add_shuffleanswers();
+		
 		$maxanswers = 4;
         for ($i = 1; $i <= $maxanswers; $i++) {
             $this->_form->addElement('header', 'answertitle'.$i, get_string('answer').' '. $i);
             $this->add_audio_answer_upload($i, null, true);
+			$this->add_correctanswer($i);
         }
     }
 }

@@ -64,78 +64,72 @@ if($CFG->version<2014051200){
 	$event->trigger();
 } 
 
+//are we a teacher or a student?
+if(has_capability('mod/tquiz:preview',$modulecontext)){
+	$mode = "preview";
+}else{
+	$mode= "view";
+}
+
+
 
 /// Set up the page header
 $PAGE->set_url('/mod/tquiz/view.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($tquiz->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
-$PAGE->set_pagelayout('course');
-
-	//Get an admin settings 
-	$config = get_config('mod_tquiz');
-  	$someadminsetting = $config->someadminsetting;
-
-	//Get an instance setting
-	$someinstancesetting = $tquiz->someinstancesetting;
-
-
-//get our javascript all ready to go
-//We can omit $jsmodule, but its nice to have it here, 
-//if for example we need to include some funky YUI stuff
-$jsmodule = array(
-	'name'     => 'mod_tquiz',
-	'fullpath' => '/mod/tquiz/module.js',
-	'requires' => array()
-);
-//here we set up any info we need to pass into javascript
-$opts =Array();
-$opts['cmid'] = $cm->id;
-
-
-//this inits the M.mod_tquiz thingy, after the page has loaded.
-$PAGE->requires->js_init_call('M.mod_tquiz.helper.init', array($opts),false,$jsmodule);
-
-//this loads any external JS libraries we need to call
-//$PAGE->requires->js("/mod/tquiz/js/somejs.js");
-//$PAGE->requires->js(new moodle_url('http://www.somewhere.com/some.js'),true);
+if($mode=="view"){
+	$PAGE->set_pagelayout('base');
+}else{
+	$PAGE->set_pagelayout('course');
+}
+//Get an admin settings 
+$config = get_config('mod_tquiz');
 
 //This puts all our display logic into the renderer.php file in this plugin
 //theme developers can override classes there, so it makes it customizable for others
 //to do it this way.
 $renderer = $PAGE->get_renderer('mod_tquiz');
 
-//From here we actually display the page.
+//From here we prepare to display the page.
 $frames = array();
 $questiondivs = '';
 $questions = $DB->get_records('tquiz_questions',array('tquiz'=>$tquiz->id));
 $questionids = array();
-
+$question_array=array();
 foreach($questions as $question){
 	$q = $renderer->fetch_question_div($question, $tquiz,$modulecontext);
-	$questiondivs .= $q;
+	$question_array[] = $q;
 	$questionids[]=$question->id;
+	if($tquiz->shufflequestions){
+		shuffle($question_array);
+	}
+	$questiondivs = implode(' ',$question_array);
 }
 
 
-//get our javascript all ready to go
+//get our main javascript all ready to go
+//===========================================
 //We can omit $jsmodule, but its nice to have it here, 
 //if for example we need to include some funky YUI stuff
 $jsmodule = array(
 	'name'     => 'mod_tquiz',
 	'fullpath' => '/mod/tquiz/module.js',
-	'requires' => array('transition','button','button-group')
+	'requires' => array('transition','button','button-group','io')
 );
+//'requires' => array('transition','button','button-group')
 $opts =Array();
 $opts['cmid']=$cm->id;
 $opts['quids']=$questionids;
-$opts['preview']=false;
+$opts['preview']=$mode=='preview';
+$opts['editmode']=false;
+$opts['qcount']=count($questionids);
 $opts['a_trans_time']=0.5;
 $opts['q_trans_time']=2;
 
 //this inits the M.mod_tquiz thingy, after the page has loaded.
-$PAGE->requires->js_init_call('M.mod_tquiz.helper.init', array($opts,$questionids),false,$jsmodule);
-
+$PAGE->requires->js_init_call('M.mod_tquiz.helper.init', array($opts),false,$jsmodule);
+//===========================================
 
 //get our soundmanager library
 //===========================================
@@ -148,10 +142,24 @@ $soundopts['swfurl']='/filter/videoeasy/players/soundmanagerv297a/swf/';
 $PAGE->requires->js_init_call('M.mod_tquiz.sm2.init', array($soundopts),false,$jsmodule);
 //===========================================
 
+//get our quiz timer working
+//===========================================
+	$timeropts =Array();
+	$timeropts['timelimit']=$tquiz->timelimit;
+	$timeropts['showcountdown']=false;
+	$PAGE->requires->js_init_call('M.mod_tquiz.timer.init', array($timeropts), false,$jsmodule);
+//===========================================
 
-$mode = "preview";
-echo $renderer->header($tquiz, $cm, $mode, null, get_string('view', 'tquiz'));
+//if we are teacher we see tabs. If student we just see the quiz
+if($mode=='preview'){
+	echo $renderer->header($tquiz, $cm, $mode, null, get_string('view', 'tquiz'));
+}else{
+	echo $renderer->notabsheader();
+}
+
 echo $renderer->fetch_intro($tquiz,$cm);
 echo $questiondivs;
 echo $renderer->fetch_feedback($tquiz,$cm,$modulecontext);
+echo $renderer->fetch_progressbar();
+echo $renderer->fetch_countdowntimer();
 echo $renderer->footer();
