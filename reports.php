@@ -29,10 +29,16 @@
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/reportclasses.php');
 
 
 $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
 $n  = optional_param('n', 0, PARAM_INT);  // tquiz instance ID - it should be named as the first character of the module
+$showreport = optional_param('report', 'menu', PARAM_TEXT); // report type
+$questionid = optional_param('questionid', 0, PARAM_INT); // report type
+$userid = optional_param('userid', 0, PARAM_INT); // report type
+$attemptid = optional_param('attemptid', 0, PARAM_INT); // report type
+
 
 if ($id) {
     $cm         = get_coursemodule_from_id('tquiz', $id, 0, false, MUST_EXIST);
@@ -90,26 +96,72 @@ $jsmodule = array(
 );
 //here we set up any info we need to pass into javascript
 $opts =Array();
-$opts['someinstancesetting'] = $someinstancesetting;
-
 
 //this inits the M.mod_tquiz thingy, after the page has loaded.
 $PAGE->requires->js_init_call('M.mod_tquiz.helper.init', array($opts),false,$jsmodule);
 
-//this loads any external JS libraries we need to call
-//$PAGE->requires->js("/mod/tquiz/js/somejs.js");
-//$PAGE->requires->js(new moodle_url('http://www.somewhere.com/some.js'),true);
 
-//This puts all our display logic into the renderer.php file in this plugin
-//theme developers can override classes there, so it makes it customizable for others
-//to do it this way.
+//This puts all our display logic into the renderer.php files in this plugin
 $renderer = $PAGE->get_renderer('mod_tquiz');
+$reportrenderer = $PAGE->get_renderer('mod_tquiz','report');
 
 //From here we actually display the page.
 //this is core renderer stuff
 $mode = "reports";
 echo $renderer->header($tquiz, $cm, $mode, null, get_string('reports', 'tquiz'));
-$attempts = $DB->get_records('tquiz_attempt',array('tquizid'=>$tquiz->id));
-echo $renderer->show_attempts_list($attempts,$tquiz,$cm);
-// Finish the page
+
+switch ($showreport){
+	case 'allattempts':
+		$attempts = $DB->get_records('tquiz_attempt',array('tquizid'=>$tquiz->id,'status'=>'current'));
+		echo $renderer->show_attempts_header($tquiz,$cm);
+		echo $renderer->show_attempts_list($attempts,$tquiz,$cm);
+		// Finish the page
+		echo $renderer->footer();
+		return;
+	
+	case 'allusers':
+		$report = new mod_tquiz_allusers_report();
+		$formdata = new stdClass();
+		$formdata->tquizid=$tquiz->id;
+		break;	
+		
+	case 'questiondetails':
+		$report = new mod_tquiz_questiondetails_report();
+		$formdata = new stdClass();
+		$formdata->questionid=$questionid;
+		$formdata->tquizid=$tquiz->id;
+		break;
+		
+	case 'menu':
+		$questions = $DB->get_records('tquiz_questions',array('tquiz'=>$tquiz->id));
+		echo $reportrenderer->render_reportmenu($tquiz,$cm, $questions);
+		// Finish the page
+		echo $renderer->footer();
+		return;
+		
+	case 'attempt':
+		$report = new mod_tquiz_attempt_report();
+		$formdata = new stdClass();
+		$formdata->userid=$userid;
+		$formdata->attemptid=$attemptid;
+		break;
+		
+	default:
+		echo "unknown report type.";
+		echo $renderer->footer();
+		return;
+}
+
+/*
+1) load the class
+2) call report->fethchrawdata
+3) call $rows=report->fetchformattedrecords($withlinks=true)
+5) call $reportrenderer->render_section_html($sectiontitle, $report->name, $report->get_head, $rows, $report->fields);
+*/
+
+$report->process_raw_data($formdata);
+$reportheading = $report->fetch_formatted_heading();
+$reportrows = $report->fetch_formatted_rows(true);
+echo $reportrenderer->render_section_html($reportheading, $report->fetch_name(), $report->fetch_head(), $reportrows, $report->fetch_fields());
+echo $reportrenderer->show_reports_footer($tquiz,$cm);
 echo $renderer->footer();

@@ -285,6 +285,12 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 
 	}
 	
+	function show_attempts_header($tquiz,$cm){
+		global $DB;
+		$ret = $this->output->heading(get_string('showingallattempts','tquiz'), 3, 'main');
+		return $ret;
+		
+	}
 	
 	/**
 	 * Return the html table of attempts
@@ -294,9 +300,15 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 	 */
 	function show_attempts_list($attempts,$tquiz,$cm){
 		global $DB;
+		$ret="";
 		
 		if(!$attempts){
 			return $this->output->heading(get_string('noattempts','tquiz'), 3, 'main');
+		}else{
+			$deleteallbutton = new single_button(
+				new moodle_url('/mod/tquiz/manageattempts.php',array('id'=>$cm->id,'action'=>'confirmdeleteall')), 
+				get_string('deleteallattempts','tquiz'), 'get');
+				$ret .=  html_writer::div( $this->render($deleteallbutton) ,'mod_tquiz_actionbuttons');
 		}
 	
 		$table = new html_table();
@@ -306,9 +318,9 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 			get_string('username', 'tquiz'),
 			get_string('actions', 'tquiz')
 		);
-		$table->headspan = array(1,1,2);
+		$table->headspan = array(1,1,3);
 		$table->colclasses = array(
-			'starttime', 'username','view','delete'
+			'starttime', 'username','details','logs','delete'
 		);
 
 		//sort by start date
@@ -317,7 +329,6 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		//loop through the attempts and add to table
 		foreach ($attempts as $attempt) {
 			$row = new html_table_row();
-		
 		
 			$starttimecell = new html_table_cell(date("Y-m-d H:i:s",$attempt->timecreated));
 			if(array_key_exists($attempt->userid,$users)){
@@ -333,24 +344,29 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 				}
 			}
 			$usernamecell = new html_table_cell($fullname);
+			
+			$actionurl = '/mod/tquiz/reports.php';
+			$detailsurl = new moodle_url($actionurl, array('id'=>$cm->id,'n'=>$tquiz->id,'report'=>'attempt','userid'=>$user->id,'attemptid'=>$attempt->id));
+			$detailslink = html_writer::link($detailsurl, get_string('details', 'tquiz'));
+			$detailscell = new html_table_cell($detailslink);
 		
 			$actionurl = '/mod/tquiz/manageattempts.php';
-			$viewurl = new moodle_url($actionurl, array('id'=>$cm->id,'attemptid'=>$attempt->id));
-			$viewlink = html_writer::link($viewurl, get_string('view', 'tquiz'));
-			$viewcell = new html_table_cell($viewlink);
+			$logsurl = new moodle_url($actionurl, array('id'=>$cm->id,'attemptid'=>$attempt->id));
+			$logslink = html_writer::link($logsurl, get_string('logs', 'tquiz'));
+			$logscell = new html_table_cell($logslink);
 
-		
+			$actionurl = '/mod/tquiz/manageattempts.php';
 			$deleteurl = new moodle_url($actionurl, array('id'=>$cm->id,'attemptid'=>$attempt->id,'action'=>'confirmdelete'));
 			$deletelink = html_writer::link($deleteurl, get_string('deleteattempt', 'tquiz'));
 			$deletecell = new html_table_cell($deletelink);
 
 			$row->cells = array(
-				$starttimecell, $usernamecell, $viewcell, $deletecell
+				$starttimecell, $usernamecell, $detailscell, $logscell, $deletecell
 			);
 			$table->data[] = $row;
 		}
-
-		return html_writer::table($table);
+		$ret .= html_writer::table($table);
+		return $ret;
 
 	}
 	
@@ -621,4 +637,154 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 	}
 
 }
+
+
+/**
+ * Renderer for tquiz reports.
+ *
+ * @package    mod_tquiz
+ * @copyright  2014 Justin Hunt <poodllsupport@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class mod_tquiz_report_renderer extends plugin_renderer_base {
+
+
+	public function render_reportmenu($tquiz,$cm, $questions) {
+		
+		$allattempts = new single_button(
+			new moodle_url('/mod/tquiz/reports.php',array('id'=>$cm->id, 'n'=>$tquiz->id, 'report'=>'allattempts')), 
+			get_string('allattempts','tquiz'), 'get');
+		/*
+		$allsummary = new single_button(
+			new moodle_url('/mod/tquiz/reports.php',array('id'=>$cm->id, 'n'=>$tquiz->id, 'report'=>'summary')), 
+			get_string('allsummary','tquiz'), 'get');
+		*/
+		$allusers = new single_button(
+			new moodle_url('/mod/tquiz/reports.php',array('id'=>$cm->id, 'n'=>$tquiz->id, 'report'=>'allusers')), 
+			get_string('allusers','tquiz'), 'get');
+			
+		$ret = html_writer::div( $this->render($allattempts) . $this->render($allusers) ,'mod_tquiz_listbuttons');
+		
+		foreach($questions as $question){	
+			$qdetails = new single_button(
+				new moodle_url('/mod/tquiz/reports.php',array('id'=>$cm->id, 'n'=>$tquiz->id, 'report'=>'questiondetails', 'questionid'=>$question->id)), 
+				get_string('questiondetails','tquiz', $question->name), 'get');
+			/*
+			$qsummary= new single_button(
+				new moodle_url('/mod/tquiz/reports.php',array('id'=>$cm->id, 'n'=>$tquiz->id, 'report'=>'questionsummary', 'questionid'=>$question->id)), 
+				get_string('questionsummary','tquiz', $question->name), 'get');
+				
+			$ret .= html_writer::div( $this->render($qsummary) . $this->render($qdetails),'mod_tquiz_listbuttons');
+			*/
+			$ret .= html_writer::div( $this->render($qdetails),'mod_tquiz_listbuttons');
+		}
+
+		return $ret;
+	}
+
+
+	public function render_reporttitle_html($course,$username) {
+		$ret = $this->output->heading(format_string($course->fullname),2);
+		$ret .= $this->output->heading(get_string('reporttitle','tquiz',$username),3);
+		return $ret;
+	}
+
+	public function render_empty_section_html($sectiontitle) {
+		global $CFG;
+		return $this->output->heading(get_string('nodataavailable','tquiz'),3);
+	}
+	
+	public function render_exportbuttons_html($course,$selecteduser){
+		$pdf = new single_button(
+			new moodle_url('/mod/tquiz/reports.php',array('id'=>$course->id, 'userid'=>$selecteduser->id, 'format'=>RLCR_FORMAT_PDF, 'action'=>'doexport')),
+			get_string('exportpdf','tquiz'), 'get');
+		
+		$excel = new single_button(
+			new moodle_url('/mod/tquiz/reports.php',array('id'=>$course->id, 'userid'=>$selecteduser->id, 'format'=>RLCR_FORMAT_EXCEL, 'action'=>'doexport')), 
+			get_string('exportexcel','tquiz'), 'get');
+
+		return html_writer::div( $this->render($pdf) . $this->render($excel),'tquiz_listbuttons');
+	}
+	
+	public function render_continuebuttons_html($course){
+		$backtocourse = new single_button(
+			new moodle_url('/course/view.php',array('id'=>$course->id)), 
+			get_string('backtocourse','tquiz'), 'get');
+		
+		$selectanother = new single_button(
+			new moodle_url('/mod/tquiz/index.php',array('id'=>$course->id)), 
+			get_string('selectanother','tquiz'), 'get');
+			
+		return html_writer::div($this->render($backtocourse) . $this->render($selectanother),'tquiz_listbuttons');
+	}
+
+	public function render_section_html($sectiontitle, $report, $head, $rows, $fields) {
+		global $CFG;
+		if(empty($rows)){
+			return $this->render_empty_section_html($sectiontitle);
+		}
+		
+		//set up our table and head attributes
+		$tableattributes = array('class'=>'generaltable tquiz_table');
+		$headrow_attributes = array('class'=>'tquiz_headrow');
+		
+		$htmltable = new html_table();
+		$htmltable->attributes = $tableattributes;
+		
+		
+		$htr = new html_table_row();
+		$htr->attributes = $headrow_attributes;
+		foreach($head as $headcell){
+			$htr->cells[]=new html_table_cell($headcell);
+		}
+		$htmltable->data[]=$htr;
+		
+		foreach($rows as $row){
+			$htr = new html_table_row();
+			//set up descrption cell
+			$cells = array();
+			foreach($fields as $field){
+				$cell = new html_table_cell($row->{$field});
+				$cell->attributes= array('class'=>'tquiz_cell_' . $report . '_' . $field);
+				$htr->cells[] = $cell;
+			}
+
+			$htmltable->data[]=$htr;
+		}
+		$html = $this->output->heading($sectiontitle, 4);
+		$html .= html_writer::table($htmltable);
+		return $html;
+		
+	}
+	
+	function show_reports_footer($tquiz,$cm){
+		// print's a popup link to your custom page
+		$link = new moodle_url('/mod/tquiz/reports.php',array('id'=>$cm->id, 'n'=>$tquiz->id));
+		return  html_writer::link($link, get_string('returntoreports','mod_tquiz'));
+	}
+	/*
+	public function render_format_attempts_data($attempts,$fields){
+		global $DB;
+		$returndata = array();
+		foreach($attempts as $attempt){
+			$data = new stdClass();
+			foreach($fields as $field){
+				if(strpos($field,'time')!==false){
+					$data->{$field} =date("Y-m-d H:i:s",$attempt->{$field});
+				}elseif(strpos($field,'userid')!==false){
+					$data->{$field} =fullname($DB->get_record('user',array('id'=>$attempt->{$field})));
+				}elseif(property_exists($attempt,$field)){
+					$data->{$field}=$attempt->{$field};
+				}else{
+					$data->{$field}=$field;
+				}
+			}//end of for each field
+			$returndata[]=$data;
+		}//end of for each attempt
+		return $returndata;
+	}
+	*/
+	
+}
+
 

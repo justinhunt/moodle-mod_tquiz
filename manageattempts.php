@@ -65,31 +65,48 @@ if ($attemptid) {
 $redirecturl = new moodle_url('/mod/tquiz/reports.php', array('id'=>$cm->id));
 
 //handle delete actions
-if($action == 'confirmdelete'){
-	$renderer = $PAGE->get_renderer('mod_tquiz');
-	echo $renderer->header($tquiz, $cm, '', null, get_string('confirmattemptdeletetitle', 'tquiz'));
-	echo $renderer->confirm(get_string("confirmattemptdelete","tquiz"), 
-		new moodle_url('manageattempts.php', array('action'=>'delete','id'=>$cm->id,'attemptid'=>$attemptid)), 
-		$redirecturl);
-	echo $renderer->footer();
-	return;
+switch($action){
+	case 'confirmdelete':
+		$renderer = $PAGE->get_renderer('mod_tquiz');
+		echo $renderer->header($tquiz, $cm, '', null, get_string('confirmattemptdeletetitle', 'tquiz'));
+		echo $renderer->confirm(get_string("confirmattemptdelete","tquiz"), 
+			new moodle_url('manageattempts.php', array('action'=>'delete','id'=>$cm->id,'attemptid'=>$attemptid)), 
+			$redirecturl);
+		echo $renderer->footer();
+		return;
 
 /////// Delete attempt NOW////////
-}elseif ($action == 'delete'){
-	require_sesskey();
-	if (!$DB->delete_records("tquiz_attempt", array('id'=>$attemptid))){
-		print_error("Could not delete attempt");
-		if (!$DB->delete_records("tquiz_attempt_log", array('attemptid'=>$attemptid))){
-			print_error("Could not delete logs");
+	case 'delete':
+		require_sesskey();
+		if (!$DB->delete_records("tquiz_attempt", array('id'=>$attemptid))){
+			print_error("Could not delete attempt");
+			if (!$DB->delete_records("tquiz_attempt_log", array('attemptid'=>$attemptid))){
+				print_error("Could not delete logs");
+			}
 		}
-	}
-
-	redirect($redirecturl);
+		redirect($redirecturl);
+	
+	case 'confirmdeleteall':
+		$renderer = $PAGE->get_renderer('mod_tquiz');
+		echo $renderer->header($tquiz, $cm, '', null, get_string('confirmattemptdeletealltitle', 'tquiz'));
+		echo $renderer->confirm(get_string("confirmattemptdeleteall","tquiz"), 
+			new moodle_url('manageattempts.php', array('action'=>'deleteall','id'=>$cm->id)), 
+			$redirecturl);
+		echo $renderer->footer();
+		return;
+	
+	/////// Delete ALL attempts ////////
+	case 'deleteall':
+		require_sesskey();
+		if (!$DB->delete_records("tquiz_attempt", array('tquizid'=>$tquiz->id))){
+			print_error("Could not delete attempts (all)");
+			if (!$DB->delete_records("tquiz_attempt_log", array('tquizid'=>$tquiz->id))){
+				print_error("Could not delete logs (all)");
+			}
+		}
+		redirect($redirecturl);
 
 }
-
-
-
 
 //if  we got here we are in view mode
 

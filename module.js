@@ -249,12 +249,16 @@ M.mod_tquiz.helper = {
 	
 	revealanswers: function(){
 		var ansdiv = Y.one('#' + 'mod_tquiz_allanswers_container_' + this.currentq);
+		//we don't want to do this twice, mostly because of messing up the logs
+		if (ansdiv.getStyle('display')!='none'){return;}
+		
 		var hidingdiv = Y.one('#' + 'mod_tquiz_hiddenanswers_container_' + this.currentq);
 		hidingdiv.setStyle('display', 'none');
 		ansdiv.setStyle('display', 'block').transition(
 				{ opacity: 1,
 				  duration: this.opts['a_trans_time']}
 		);
+		this.logevent(this.currentq, 'revealanswers','1');
 	},
 	
 	doquestiontransition: function(fromdiv,todiv){
@@ -293,6 +297,7 @@ M.mod_tquiz.helper = {
 			var todiv  = Y.one('#' + 'tquiz_feedback_div');
 			//update progress bar
 			this.clearprogressbar();
+			this.logevent(0, 'finishquiz', 0);
 		}
 		this.doquestiontransition(fromdiv,todiv);
 		
@@ -485,6 +490,7 @@ M.mod_tquiz.timer = {
         if (secondsleft < 0) {
             M.mod_tquiz.timer.stop(null);
 			M.mod_tquiz.helper.logevent(0, 'quiztimedout', 0);
+			M.mod_tquiz.helper.logevent(0, 'finishquiz', 0);
 			M.mod_tquiz.helper.jumptoend();
             return;
         }

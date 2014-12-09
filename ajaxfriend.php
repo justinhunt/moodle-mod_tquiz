@@ -58,11 +58,18 @@ $result = false;
 $updatetime = time();
 
 if($eventkey=='startquiz'){
+	
+	//turn old attempts to mush
+	$wheresql = "tquizid=? AND userid=?";
+	$params   = array($tquiz->id, $USER->id);
+	$DB->set_field_select('tquiz_attempt', 'status', 'old', $wheresql, $params);
+
+	//create a new attempt
 	$attempt = new stdClass();
 	$attempt->type=1;//what was this about?
 	$attempt->tquizid=$tquiz->id;
 	$attempt->userid=$USER->id;
-	$attempt->status='open';
+	$attempt->status='current';
 	$attempt->score=0;
 	$attempt->timecreated=$updatetime;
 	$attemptid = $DB->insert_record('tquiz_attempt',$attempt,true);
@@ -72,13 +79,13 @@ if($eventkey=='startquiz'){
 		$attempt =false;
 	}
 }else{
-	$attempts = $DB->get_records('tquiz_attempt',array('tquizid'=>$tquiz->id, 'userid'=>$USER->id));//, 'id ASC'
+	$attempts = $DB->get_records('tquiz_attempt',array('tquizid'=>$tquiz->id, 'userid'=>$USER->id, 'status'=>'current'));//, 'id ASC'
 	if($attempts){
 		$attempt = array_pop($attempts);
 	}
 }
 
-if($attempt && $attempt->status=='open'){
+if($attempt && $attempt->status=='current'){
 	//add the log
 	$log = new stdClass();
 	$log->attemptid = $attempt->id;
@@ -89,7 +96,22 @@ if($attempt && $attempt->status=='open'){
 	$log->eventvalue = $eventvalue;
 	$log->eventtime = $eventtime;
 	$log->timecreated = $updatetime;
-	$result = $DB->insert_record('tquiz_attempt_log', $log);
+	$result = $DB->insert_record('tquiz_attempt_log', $log,true);
+	
+	//if the quiz is finishing tidy up
+	//or if we finished it before the last anwer came in (ajax race condition)
+	if($eventkey=='finishquiz' || ($attempt->timefinished>0 && $eventkey=='SELECTANSWER')){
+	$sql =	"SELECT COUNT(*)
+		FROM {tquiz_attempt_log} tal
+		INNER JOIN {tquiz_questions} tq ON tal.questionid = tq.id
+		WHERE tal.attemptid = :talattemptid AND tq.correctanswer=tal.eventvalue AND tal.eventkey='SELECTANSWER'";
+		$params=array();
+		$params['talattemptid'] = $attempt->id;
+		$score = $DB->count_records_sql($sql,$params);
+		$attempt->timefinished=$updatetime;
+		$attempt->score=$score;
+		$DB->update_record('tquiz_attempt',$attempt);
+	}
 }
 
 //check completion reqs against satisfied conditions
