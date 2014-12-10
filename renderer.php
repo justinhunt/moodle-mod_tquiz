@@ -704,16 +704,24 @@ class mod_tquiz_report_renderer extends plugin_renderer_base {
 		return $this->output->heading(get_string('nodataavailable','tquiz'),3);
 	}
 	
-	public function render_exportbuttons_html($course,$selecteduser){
+	public function render_exportbuttons_html($cm,$formdata,$showreport){
+		//convert formdata to array
+		$formdata = (array) $formdata;
+		$formdata['id']=$cm->id;
+		$formdata['report']=$showreport;
+		
+		$formdata['format']='pdf';
 		$pdf = new single_button(
-			new moodle_url('/mod/tquiz/reports.php',array('id'=>$course->id, 'userid'=>$selecteduser->id, 'format'=>RLCR_FORMAT_PDF, 'action'=>'doexport')),
+			new moodle_url('/mod/tquiz/reports.php',$formdata),
 			get_string('exportpdf','tquiz'), 'get');
 		
+		$formdata['format']='csv';
 		$excel = new single_button(
-			new moodle_url('/mod/tquiz/reports.php',array('id'=>$course->id, 'userid'=>$selecteduser->id, 'format'=>RLCR_FORMAT_EXCEL, 'action'=>'doexport')), 
+			new moodle_url('/mod/tquiz/reports.php',$formdata), 
 			get_string('exportexcel','tquiz'), 'get');
 
-		return html_writer::div( $this->render($pdf) . $this->render($excel),'tquiz_listbuttons');
+		//return html_writer::div( $this->render($pdf) . $this->render($excel),'mod_tquiz_actionbuttons');
+		return html_writer::div( $this->render($excel),'mod_tquiz_actionbuttons');
 	}
 	
 	public function render_continuebuttons_html($course){
@@ -726,6 +734,37 @@ class mod_tquiz_report_renderer extends plugin_renderer_base {
 			get_string('selectanother','tquiz'), 'get');
 			
 		return html_writer::div($this->render($backtocourse) . $this->render($selectanother),'tquiz_listbuttons');
+	}
+	
+	public function render_section_csv($sectiontitle, $report, $head, $rows, $fields) {
+
+        // Use the sectiontitle as the file name. Clean it and change any non-filename characters to '_'.
+        $name = clean_param($sectiontitle, PARAM_FILE);
+        $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
+		$quote = '"';
+		$delim= ",";//"\t";
+		$newline = "\r\n";
+
+		header("Content-Disposition: attachment; filename=$name.csv");
+		header("Content-Type: text/comma-separated-values");
+
+		//echo header
+		$heading="";	
+		foreach($head as $headfield){
+			$heading .= $quote . $headfield . $quote . $delim ;
+		}
+		echo $heading. $newline;
+		
+		//echo data rows
+        foreach ($rows as $row) {
+			$datarow = "";
+			foreach($fields as $field){
+				$datarow .= $quote . $row->{$field} . $quote . $delim ;
+			}
+			 echo $datarow . $newline;
+		}
+        exit();
+        break;
 	}
 
 	public function render_section_html($sectiontitle, $report, $head, $rows, $fields) {
@@ -767,10 +806,12 @@ class mod_tquiz_report_renderer extends plugin_renderer_base {
 		
 	}
 	
-	function show_reports_footer($tquiz,$cm){
+	function show_reports_footer($tquiz,$cm, $formdata,$showreport){
 		// print's a popup link to your custom page
 		$link = new moodle_url('/mod/tquiz/reports.php',array('id'=>$cm->id, 'n'=>$tquiz->id));
-		return  html_writer::link($link, get_string('returntoreports','mod_tquiz'));
+		$ret =  html_writer::link($link, get_string('returntoreports','mod_tquiz'));
+		$ret .= $this->render_exportbuttons_html($cm,$formdata,$showreport);
+		return $ret;
 	}
 
 }

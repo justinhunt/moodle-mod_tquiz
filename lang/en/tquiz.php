@@ -127,5 +127,7 @@ $string['nodataavailable'] = 'No data available for display';
 $string['returntoreports'] = 'Return to Reports Home';
 $string['date'] = 'Date';
 $string['score'] = 'Score';
+$string['exportpdf'] = 'Export as PDF';
+$string['exportexcel'] = 'Export as Excel';
 $string['viewreport'] = 'view report';
 $string['attemptsmanager'] = 'Attempts Manager';

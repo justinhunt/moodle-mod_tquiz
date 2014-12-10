@@ -34,6 +34,7 @@ require_once(dirname(__FILE__).'/reportclasses.php');
 
 $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
 $n  = optional_param('n', 0, PARAM_INT);  // tquiz instance ID - it should be named as the first character of the module
+$format = optional_param('format', 'html', PARAM_TEXT); //export format csv or html
 $showreport = optional_param('report', 'menu', PARAM_TEXT); // report type
 $questionid = optional_param('questionid', 0, PARAM_INT); // report type
 $userid = optional_param('userid', 0, PARAM_INT); // report type
@@ -108,11 +109,11 @@ $reportrenderer = $PAGE->get_renderer('mod_tquiz','report');
 //From here we actually display the page.
 //this is core renderer stuff
 $mode = "reports";
-echo $renderer->header($tquiz, $cm, $mode, null, get_string('reports', 'tquiz'));
 
 switch ($showreport){
 	case 'allattempts':
 		$attempts = $DB->get_records('tquiz_attempt',array('tquizid'=>$tquiz->id,'status'=>'current'));
+		echo $renderer->header($tquiz, $cm, $mode, null, get_string('reports', 'tquiz'));
 		echo $renderer->show_attempts_header($tquiz,$cm);
 		echo $renderer->show_attempts_list($attempts,$tquiz,$cm);
 		// Finish the page
@@ -134,6 +135,7 @@ switch ($showreport){
 		
 	case 'menu':
 		$questions = $DB->get_records('tquiz_questions',array('tquiz'=>$tquiz->id));
+		echo $renderer->header($tquiz, $cm, $mode, null, get_string('reports', 'tquiz'));
 		echo $reportrenderer->render_reportmenu($tquiz,$cm, $questions);
 		// Finish the page
 		echo $renderer->footer();
@@ -147,6 +149,7 @@ switch ($showreport){
 		break;
 		
 	default:
+		echo $renderer->header($tquiz, $cm, $mode, null, get_string('reports', 'tquiz'));
 		echo "unknown report type.";
 		echo $renderer->footer();
 		return;
@@ -161,7 +164,17 @@ switch ($showreport){
 
 $report->process_raw_data($formdata);
 $reportheading = $report->fetch_formatted_heading();
-$reportrows = $report->fetch_formatted_rows(true);
-echo $reportrenderer->render_section_html($reportheading, $report->fetch_name(), $report->fetch_head(), $reportrows, $report->fetch_fields());
-echo $reportrenderer->show_reports_footer($tquiz,$cm);
-echo $renderer->footer();
+
+switch($format){
+	case 'csv':
+		$reportrows = $report->fetch_formatted_rows(false);
+		$reportrenderer->render_section_csv($reportheading, $report->fetch_name(), $report->fetch_head(), $reportrows, $report->fetch_fields());
+		exit;
+	default:
+		
+		$reportrows = $report->fetch_formatted_rows(true);
+		echo $renderer->header($tquiz, $cm, $mode, null, get_string('reports', 'tquiz'));
+		echo $reportrenderer->render_section_html($reportheading, $report->fetch_name(), $report->fetch_head(), $reportrows, $report->fetch_fields());
+		echo $reportrenderer->show_reports_footer($tquiz,$cm,$formdata,$showreport);
+		echo $renderer->footer();
+}
