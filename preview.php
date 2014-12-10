@@ -87,10 +87,10 @@ $PAGE->requires->js_init_call('M.mod_tquiz.helper.init', array($opts),false,$jsm
 $require_css = '/mod/tquiz/font-awesome/css/font-awesome.min.css';
 $PAGE->requires->css(new moodle_url($require_css));
 $require_js = '/mod/tquiz/soundmanager/script/soundmanager2.js';
-$PAGE->requires->js(new moodle_url($require_js))
+$PAGE->requires->js(new moodle_url($require_js));
 //set it up and init it
-$soundopts = Array();
-$soundopts['swfurl']='/filter/videoeasy/players/soundmanagerv297a/swf/';
+$soundopts = array();
+$soundopts['swfurl']='/mod/tquiz/soundmanager/swf/';
 //this inits the M.mod_tquiz thingy, after the page has loaded.
 $PAGE->requires->js_init_call('M.mod_tquiz.sm2.init', array($soundopts),false,$jsmodule);
 //===========================================
