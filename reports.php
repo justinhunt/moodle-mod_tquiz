@@ -154,8 +154,8 @@ switch ($showreport){
 
 /*
 1) load the class
-2) call report->fethchrawdata
-3) call $rows=report->fetchformattedrecords($withlinks=true)
+2) call report->process_raw_data
+3) call $rows=report->fetch_formatted_records($withlinks=true(html) false(print/excel))
 5) call $reportrenderer->render_section_html($sectiontitle, $report->name, $report->get_head, $rows, $report->fields);
 */
 

@@ -90,6 +90,7 @@ M.mod_tquiz.helper = {
 		});
 		*/
 		    // A group of radio-like buttons
+		/*
 			var togglegroups = this.Y.all('.mod_tquiz_togglegroup');
 			togglegroups.each(function(togglegroup){
 					var Y =  M.mod_tquiz.helper.Y;
@@ -98,21 +99,11 @@ M.mod_tquiz.helper = {
 					type: 'radio'
 					}).render();
 					
-					/*
-					bgr.on('selectionChange', function(e){
-						console.log('selchange');
-						var Y =  M.mod_tquiz.helper.Y;
-						var sb = Y.one('#mod_tquiz_submitbutton_' + M.mod_tquiz.helper.currentq  + '_button');
-						sb.removeClass('yui3-button-disabled');
-						//sb.disabled=false;
-						var bgrbuttons = bgr.getSelectedButtons();
-						var thebutton = bgrbuttons.shift();
-						 M.mod_tquiz.helper.currenta = thebutton.getAttribute('value');
-					});
-					*/
-					
+				//*COMMENTED HERE **
 				}
 			);
+			*/
+			
 			/*
 			var buttonGroupRadio = new Y.ButtonGroup({
 				srcNode: '#radioContainer',
@@ -207,12 +198,15 @@ M.mod_tquiz.helper = {
 		this.currenta = answerid;
 		var togglebuttons = this.Y.all('.mod_tquiz_selectaudioanswer_button');
 		togglebuttons.each(function(thebutton) { 
-				thebutton.removeClass('mod_tquiz_selectedbutton');
+				//thebutton.removeClass('mod_tquiz_selectedbutton');
+				thebutton.removeClass('yui3-button-selected');
 			}
 		)
 		//highlight selected button
 		var thebutton = Y.one('#mod_tquiz_audioanswer' + questionid +'_' + answerid + '_button');
-		thebutton.addClass('mod_tquiz_selectedbutton');
+		//thebutton.addClass('mod_tquiz_selectedbutton');
+		thebutton.addClass('yui3-button-selected');
+		
 		//enable select button
 		var sb = Y.one('#mod_tquiz_submitbutton_' + M.mod_tquiz.helper.currentq  + '_button');
 		sb.removeClass('yui3-button-disabled');

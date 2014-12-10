@@ -27,6 +27,11 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Renderer for tquiz reports.
  *
+ *	The important functions are:
+*  process_raw_data : turns log data for one thig (question attempt) into one row
+ * fetch_formatted_fields: uses data prepared in process_raw_data to make each field in fields full of formatted data
+ * The allusers report is the simplest example 
+ *
  * @package    mod_tquiz
  * @copyright  2014 Justin Hunt <poodllsupport@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -84,6 +89,22 @@ abstract class mod_tquiz_base_report {
 			return $ret;
 	}
 	
+	public function fetch_time_difference_js($starttimestamp,$endtimestamp){
+			
+			//return empty string if the timestamps are not both present.
+			if(!$starttimestamp || !$endtimestamp){return '';}
+			
+			$s = $date = new DateTime(); 
+			$s->setTimestamp($starttimestamp / 1000);
+						
+			$e =$date = new DateTime();
+			$e->setTimestamp($endtimestamp / 1000);
+						
+			$diff = $e->diff($s);
+			$ret = $diff->format("%H:%I:%S");
+			return $ret;
+	}
+	
 	public function fetch_formatted_rows($withlinks=true){
 		$records = $this->rawdata;
 		$fields = $this->fields;
@@ -119,6 +140,11 @@ abstract class mod_tquiz_base_report {
 	
 }
 
+/*
+* mod_tquiz_attempt_report 
+*
+*
+*/
 class mod_tquiz_attempt_report extends  mod_tquiz_base_report {
 	
 	protected $report="attempt";
@@ -134,7 +160,8 @@ class mod_tquiz_attempt_report extends  mod_tquiz_base_report {
 					if(!property_exists($record,'selectanswertime') || !property_exists($record,'revealanswerstime')){
 						$ret="";
 					}else{
-						$ret = $this->fetch_time_difference($record->revealanswerstime,$record->selectanswertime);
+						//$ret = $this->fetch_time_difference($record->revealanswerstime,$record->selectanswertime);
+						$ret = $this->fetch_time_difference_js($record->revealanswerstime_js,$record->selectanswertime_js);
 					}
 					break;
 				case 'qname':
@@ -274,6 +301,11 @@ class mod_tquiz_attempt_report extends  mod_tquiz_base_report {
 
 }
 
+/*
+* mod_tquiz_attempt_report 
+*
+*
+*/
 class mod_tquiz_questiondetails_report extends  mod_tquiz_base_report {
 	
 	protected $report="questiondetails";
@@ -286,7 +318,8 @@ class mod_tquiz_questiondetails_report extends  mod_tquiz_base_report {
 				global $DB;
 			switch($field){
 				case 'timetaken':
-						$ret = $this->fetch_time_difference($record->revealanswerstime,$record->selectanswertime);
+						//$ret = $this->fetch_time_difference($record->revealanswerstime,$record->selectanswertime);
+						$ret = $this->fetch_time_difference_js($record->revealanswerstime_js,$record->selectanswertime_js);
 						break;
 
 				case 'username':
@@ -414,6 +447,11 @@ class mod_tquiz_questiondetails_report extends  mod_tquiz_base_report {
 
 }
 
+/*
+* mod_tquiz_allusers_report 
+*
+*
+*/
 
 class mod_tquiz_allusers_report extends  mod_tquiz_base_report {
 	
@@ -436,6 +474,15 @@ class mod_tquiz_allusers_report extends  mod_tquiz_base_report {
 				case 'username':
 						$theuser = $this->fetch_cache('user',$record->userid);
 						$ret = fullname($theuser);
+						if($withlinks){
+							$detailsurl = new moodle_url('/mod/tquiz/reports.php', 
+								array('n'=>$record->tquizid,
+								'report'=>'attempt',
+								'userid'=>$record->userid,
+								'attemptid'=>$record->id));
+							$ret = html_writer::link($detailsurl,$ret);
+						}
+						
 					break;
 				
 				case 'score':

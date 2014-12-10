@@ -47,18 +47,18 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 				break;
 			
 			case 'toggle':
-			/*
-				$bigbuttonhtml = html_writer::tag('button','@@CAPTION@@',  
-				array('class'=>'mod_tquiz_togglebutton yui3-button mod_tquiz_@@SIZECLASS@@_button radio','value'=>'@@ANSWERINDEX@@',
+			
+				$bigbuttonhtml = html_writer::tag('button','<i class="fa fa-check fa-2x"></i>',  
+				array('class'=>'mod_tquiz_bigbutton yui3-button mod_tquiz_@@SIZECLASS@@_button radio','value'=>'@@ANSWERINDEX@@',
 				'id'=>'mod_tquiz_@@ID@@_button','onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));	
 				break;
-			*/
 			
+			/*
 				$bigbuttonhtml  = html_writer::empty_tag('input', array('type'=>'image',
 		  		'class'=>'mod_tquiz_big_button yui3-button mod_tquiz_@@SIZECLASS@@_button radio','value'=>'@@ANSWERINDEX@@','id'=>'mod_tquiz_@@ID@@_button',
 		  		'src'=>$CFG->wwwroot . '/mod/tquiz/pix/check.png', 'onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));
 				break;
-				
+			*/	
 				
 			case 'text':
 				$bigbuttonhtml = html_writer::tag('button','@@CAPTION@@',  
@@ -74,10 +74,16 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 			
 			
 			
-			case 'audio':
+			case 'audioimage':
 				$bigbuttonhtml  = html_writer::empty_tag('input', array('type'=>'image',
 		  		'class'=>'mod_tquiz_big_button yui3-button mod_tquiz_@@SIZECLASS@@_button','id'=>'mod_tquiz_@@ID@@_button@',
 		  		'src'=>$CFG->wwwroot . '/mod/tquiz/pix/@@IMGSRC@@.png', 'onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));
+				break;
+			
+			case 'audiofa':
+				$bigbuttonhtml = html_writer::tag('button','<i class="fa @@IMGSRC@@ fa-2x"></i>',  
+				array('class'=>'mod_tquiz_bigbutton yui3-button mod_tquiz_@@SIZECLASS@@_button',
+				'id'=>'mod_tquiz_@@ID@@_button','onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));	
 				break;
 			
 		}
@@ -347,7 +353,7 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 			
 			$actionurl = '/mod/tquiz/reports.php';
 			$detailsurl = new moodle_url($actionurl, array('id'=>$cm->id,'n'=>$tquiz->id,'report'=>'attempt','userid'=>$user->id,'attemptid'=>$attempt->id));
-			$detailslink = html_writer::link($detailsurl, get_string('details', 'tquiz'));
+			$detailslink = html_writer::link($detailsurl, get_string('viewreport', 'tquiz'));
 			$detailscell = new html_table_cell($detailslink);
 		
 			$actionurl = '/mod/tquiz/manageattempts.php';
@@ -433,7 +439,7 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 	function show_attempts_link($cmid){
 		// print's a popup link to your custom page
 		$link = new moodle_url('/mod/tquiz/reports.php',array('id'=>$cmid));
-		return  html_writer::link($link, get_string('returntoattempts','mod_tquiz'));
+		return  html_writer::link($link, get_string('returntoattemptsmanager','mod_tquiz'));
 	}
 	
 	function fetch_preview_link($questionid, $tquizid){
@@ -500,20 +506,24 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 	
 	function fetch_audio_button_player($audiolink,$profile, $id,$questionid,$answerid){
 		global $CFG;
-
-		//'onclick'=>'M.mod_tquiz.helper.answerclick(@@QUESTIONID@@,@@ANSWERINDEX@@)'));	
-		//'onclick'=>'M.mod_tquiz.sm2.handleaudioclick("@@BUTTONID@@")'));
-		$bigbuttonhtml = $this->fetch_bigbutton('audio');
+		
+		/*$bigbuttonhtml = $this->fetch_bigbutton('audioimage');
+		$qimage='questionplay';
+		$aimage='answerplay';
+		*/
+		$bigbuttonhtml = $this->fetch_bigbutton('audiofa');
+		$qimage='fa-rotate-right';
+		$aimage='fa-play-circle';
 		
 		switch($profile){
 			case 'question':
-				$bigbuttonhtml  = str_replace('@@IMGSRC@@','questionplay',$bigbuttonhtml);
+				$bigbuttonhtml  = str_replace('@@IMGSRC@@',$qimage,$bigbuttonhtml);
 				$bigbuttonhtml  = str_replace('@@ID@@',$id,$bigbuttonhtml);
 				$bigbuttonhtml  = str_replace('@@ONCLICK@@',"audio_question_click('". $id ."')",$bigbuttonhtml);
 				$bigbuttonhtml   = str_replace('@@SIZECLASS@@','audioquestion',$bigbuttonhtml);
 				break;
 			case 'answer':
-				$bigbuttonhtml  = str_replace('@@IMGSRC@@','answerplay',$bigbuttonhtml);
+				$bigbuttonhtml  = str_replace('@@IMGSRC@@',$aimage,$bigbuttonhtml);
 				$bigbuttonhtml  = str_replace('@@ID@@',$id,$bigbuttonhtml);
 				$bigbuttonhtml  = str_replace('@@ONCLICK@@',"audio_answer_click('". $id ."')",$bigbuttonhtml);
 				$bigbuttonhtml   = str_replace('@@SIZECLASS@@','audioanswer',$bigbuttonhtml);
@@ -608,7 +618,7 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 					case MOD_TQUIZ_QTYPE_AUDIOCHOICE:
 						$qtypeclass = 'mod_tquiz_allanswers_audiotype_container mod_tquiz_togglegroup';
 						
-						$submitbutton = $bigbuttoncontainer = $this->fetch_bigbutton('submit');
+						$submitbutton = $this->fetch_bigbutton('submit');
 						$submitbutton = str_replace('@@CAPTION@@',get_string('ok','tquiz'),$submitbutton);
 						$submitbutton  = str_replace('@@ID@@','submitbutton_' . $thequestion->id,$submitbutton);
 						$submitbutton = str_replace('@@ONCLICK@@','submitbutton_click(' . $thequestion->id . ')',$submitbutton);
@@ -653,7 +663,7 @@ class mod_tquiz_report_renderer extends plugin_renderer_base {
 		
 		$allattempts = new single_button(
 			new moodle_url('/mod/tquiz/reports.php',array('id'=>$cm->id, 'n'=>$tquiz->id, 'report'=>'allattempts')), 
-			get_string('allattempts','tquiz'), 'get');
+			get_string('attemptsmanager','tquiz'), 'get');
 		/*
 		$allsummary = new single_button(
 			new moodle_url('/mod/tquiz/reports.php',array('id'=>$cm->id, 'n'=>$tquiz->id, 'report'=>'summary')), 
@@ -762,29 +772,7 @@ class mod_tquiz_report_renderer extends plugin_renderer_base {
 		$link = new moodle_url('/mod/tquiz/reports.php',array('id'=>$cm->id, 'n'=>$tquiz->id));
 		return  html_writer::link($link, get_string('returntoreports','mod_tquiz'));
 	}
-	/*
-	public function render_format_attempts_data($attempts,$fields){
-		global $DB;
-		$returndata = array();
-		foreach($attempts as $attempt){
-			$data = new stdClass();
-			foreach($fields as $field){
-				if(strpos($field,'time')!==false){
-					$data->{$field} =date("Y-m-d H:i:s",$attempt->{$field});
-				}elseif(strpos($field,'userid')!==false){
-					$data->{$field} =fullname($DB->get_record('user',array('id'=>$attempt->{$field})));
-				}elseif(property_exists($attempt,$field)){
-					$data->{$field}=$attempt->{$field};
-				}else{
-					$data->{$field}=$field;
-				}
-			}//end of for each field
-			$returndata[]=$data;
-		}//end of for each attempt
-		return $returndata;
-	}
-	*/
-	
+
 }
 
 
