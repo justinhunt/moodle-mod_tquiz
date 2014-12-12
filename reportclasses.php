@@ -148,7 +148,7 @@ abstract class mod_tquiz_base_report {
 class mod_tquiz_attempt_report extends  mod_tquiz_base_report {
 	
 	protected $report="attempt";
-	protected $fields = array('qname','timetaken','qplaycount','correct');	
+	protected $fields = array('qname','timetaken','qplaycount','aplaycount','correct');	
 	protected $headingdata = null;
 	protected $qcache=array();
 	protected $ucache=array();
@@ -179,6 +179,29 @@ class mod_tquiz_attempt_report extends  mod_tquiz_base_report {
 						$ret = $record->qplaycount;
 					}
 					break;
+				
+				case 'aplaycount':
+					if($record->questionid==0){
+						$ret="";
+					}else{
+						$attempt =  $this->fetch_cache('tquiz_attempt',$record->attemptid);
+						$question =  $this->fetch_cache('tquiz_questions',$record->questionid);
+						if($question->qtype==MOD_TQUIZ_QTYPE_AUDIOCHOICE){
+							$ret = $record->aplaycount;
+							if($withlinks){
+								$responsedetailsurl = new moodle_url('/mod/tquiz/reports.php', 
+									array('n'=>$attempt->tquizid,
+									'report'=>'responsedetails',
+									'attemptid'=>$record->attemptid,
+									'questionid'=>$record->questionid));
+								$ret = html_writer::link($responsedetailsurl,$ret);
+							}
+						}else{
+							$ret="";
+						}
+					}
+					break;
+				
 				case 'correct':
 					if($record->questionid==0){
 						$ret="";
@@ -215,6 +238,7 @@ class mod_tquiz_attempt_report extends  mod_tquiz_base_report {
 			$a = new stdClass();
 			$a->tquizname = $tquiz->name;
 			$a->username = fullname($user);
+			$a->status = $attempt->status;
 			$a->attemptdate = date("Y-m-d H:i:s",$attempt->timecreated);
 			$ret = get_string('attemptheader','tquiz',$a);
 		}
@@ -251,6 +275,7 @@ class mod_tquiz_attempt_report extends  mod_tquiz_base_report {
 					$thequestion->attemptid=$adata->attemptid;
 					$thequestion->userid=$adata->userid;
 					$thequestion->qplaycount=0;
+					$thequestion->aplaycount=0;
 					$thequestion->revealanswerstime=false;
 					$thequestion->revealanswerstime_js=false;
 					$thequestion->startplayquestiontime=false;
@@ -271,6 +296,9 @@ class mod_tquiz_attempt_report extends  mod_tquiz_base_report {
 					$thequestion->{$adata->eventkey . 'time'}=$adata->timecreated;
 					$thequestion->{$adata->eventkey . 'time_js'}=$adata->eventtime;
 					$thequestion->qplaycount++;
+					break;
+				case 'startplayanswer':
+					$thequestion->aplaycount++;
 					break;
 				case 'endplayquestion':
 				case 'revealanswers':
@@ -456,7 +484,7 @@ class mod_tquiz_questiondetails_report extends  mod_tquiz_base_report {
 class mod_tquiz_allusers_report extends  mod_tquiz_base_report {
 	
 	protected $report="allusers";
-	protected $fields = array('date','username','timetaken','score',);	
+	protected $fields = array('date','username','timetaken','score');	
 	protected $headingdata = null;
 	protected $qcache=array();
 	protected $ucache=array();
@@ -515,6 +543,291 @@ class mod_tquiz_allusers_report extends  mod_tquiz_base_report {
 		//At this point we have an event object per question from the log to process.
 		//eg timetaken = $question->selectanswer - $question->endplayquestion;
 		$this->rawdata= $alldata;
+		return true;
+	}
+
+}
+
+/*
+* mod_tquiz_allusers_report 
+*
+*
+*/
+
+class mod_tquiz_allattempts_report extends  mod_tquiz_base_report {
+	
+	protected $report="allattempts";
+	protected $fields = array('starttime', 'username','status','details','logs','delete');
+	protected $headingdata = null;
+	protected $qcache=array();
+	protected $ucache=array();
+	
+	public function fetch_formatted_field($field,$record,$withlinks){
+				global $DB;
+			switch($field){
+				case 'starttime':
+					$ret =  date("Y-m-d H:i:s",$record->timecreated);
+					break;
+
+				case 'username':
+					$theuser = $this->fetch_cache('user',$record->userid);
+					$ret = fullname($theuser);
+					break;
+				
+				case 'status':
+						$ret = $record->status;
+					break;
+					
+				case 'details':
+						if($withlinks){
+							$detailsurl = new moodle_url('/mod/tquiz/reports.php', 
+								array('n'=>$record->tquizid,
+								'report'=>'attempt',
+								'userid'=>$record->userid,
+								'attemptid'=>$record->id));
+							$ret = html_writer::link($detailsurl,get_string('viewreport', 'tquiz'));
+						}else{
+							$ret="";
+						}
+					break;
+				case 'logs':
+					if($withlinks){
+						//$actionurl = '/mod/tquiz/manageattempts.php';
+						//$logsurl = new moodle_url($actionurl, array('id'=>$record->cmid,'attemptid'=>$record->id));
+						$logurl =  new moodle_url('/mod/tquiz/reports.php', 
+								array('n'=>$record->tquizid,
+								'report'=>'attemptlog',
+								'userid'=>$record->userid,
+								'attemptid'=>$record->id));
+						$ret = html_writer::link($logurl, get_string('logs', 'tquiz'));
+					}else{
+						$ret="";
+					}
+					
+					break;
+				case 'delete':
+					if($withlinks){
+						$actionurl = '/mod/tquiz/manageattempts.php';
+						$deleteurl = new moodle_url($actionurl, array('id'=>$record->cmid,'attemptid'=>$record->id,'action'=>'confirmdelete'));
+						$ret = html_writer::link($deleteurl, get_string('deleteattempt', 'tquiz'));
+					}else{
+						$ret="";
+					}
+					break;	
+				
+				default:
+					if(property_exists($record,$field)){
+						$ret=$record->{$field};
+					}else{
+						$ret = '';
+					}
+			}
+			return $ret;
+	}
+	
+	public function fetch_formatted_heading(){
+		return get_string('allattempts','tquiz');
+	}
+	
+	public function process_raw_data($formdata){
+		global $DB;
+
+		//no data in the heading, so an empty class even is overkill ..
+		$this->headingdata = new stdClass();
+		
+		//the current attempts
+		$alldata = $DB->get_records('tquiz_attempt',array('tquizid'=>$formdata->tquizid));
+		foreach($alldata as $adata){
+			$adata->cmid = $formdata->cmid;
+		}
+
+		//At this point we have an event object per question from the log to process.
+		//eg timetaken = $question->selectanswer - $question->endplayquestion;
+		$this->rawdata= $alldata;
+		return true;
+	}
+
+}
+
+/*
+* mod_tquiz_allusers_report 
+*
+*
+*/
+
+class mod_tquiz_attemptlog_report extends  mod_tquiz_base_report {
+	
+	protected $report="attemptlog";
+	protected $fields = array('qname','eventkey','eventvalue','eventtime');
+	protected $headingdata = null;
+	protected $qcache=array();
+	protected $ucache=array();
+	
+	public function fetch_formatted_field($field,$record,$withlinks){
+				global $DB;
+			switch($field){
+				case 'qname':
+					if($record->questionid==0){
+						$ret="";
+					}else{
+						$thequestion = $this->fetch_cache('tquiz_questions',$record->questionid);
+						$ret = $thequestion->name;
+					}
+					break;
+
+				case 'eventkey':
+					$ret = $record->eventkey;
+					break;
+				
+				case 'eventvalue':
+					$ret = $record->eventvalue;
+					break;
+					
+				case 'eventtime':
+					$ret =  date("Y-m-d H:i:s",$record->eventtime / 1000) . '('. $record->eventtime % 1000 .')';
+					break;	
+				
+				default:
+					if(property_exists($record,$field)){
+						$ret=$record->{$field};
+					}else{
+						$ret = '';
+					}
+			}
+			return $ret;
+	}
+	
+	public function fetch_formatted_heading(){
+		$attempt = $this->fetch_cache('tquiz_attempt',$this->headingdata->attemptid);
+		$user = $this->fetch_cache('user',$attempt->userid);
+		$tquiz = $this->fetch_cache('tquiz',$attempt->tquizid);
+		$a = new stdClass();
+		$a->tquizname = $tquiz->name;
+		$a->username = fullname($user);
+		$a->status = $attempt->status;
+		$a->attemptdate = date("Y-m-d H:i:s",$attempt->timecreated);
+		return get_string('attemptlogheader','tquiz',$a);
+	}
+	
+	public function process_raw_data($formdata){
+		global $DB;
+
+		//The data to help display a meaningful heading
+		$hdata = new stdClass();
+		$hdata->attemptid = $formdata->attemptid;
+		$this->headingdata = $hdata;
+		
+		
+		//the current attempts
+		//the current attempts
+		$logs = $DB->get_records('tquiz_attempt_log',array('attemptid'=>$formdata->attemptid));
+
+		//At this point we have an event object per question from the log to process.
+		//eg timetaken = $question->selectanswer - $question->endplayquestion;
+		$this->rawdata= $logs;
+		return true;
+	}
+
+}
+
+
+/*
+* mod_tquiz_attempt_report 
+*
+*
+*/
+class mod_tquiz_responsedetails_report extends  mod_tquiz_base_report {
+	
+	protected $report="responsedetails";
+	protected $fields = array('responsenumber','rplaycount');	
+	protected $headingdata = null;
+	protected $qcache=array();
+	protected $ucache=array();
+	
+	public function fetch_formatted_field($field,$record,$withlinks){
+				global $DB;
+			switch($field){
+				case 'responsenumber':
+						$ret = $record->responsenumber;
+						break;
+
+				case 'rplaycount':
+						$ret = $record->rplaycount;
+					break;
+				
+			
+				default:
+					if(property_exists($record,$field)){
+						$ret=$record->{$field};
+					}else{
+						$ret = '';
+					}
+			}
+			return $ret;
+	}
+	
+	public function fetch_formatted_heading(){
+		$record = $this->headingdata;
+		$ret='';
+		if(!$record){return $ret;}
+		$attempt = $this->fetch_cache('tquiz_attempt',$record->attemptid);
+		$user = $this->fetch_cache('user',$attempt->userid);
+		$tquiz = $this->fetch_cache('tquiz',$attempt->tquizid);
+		$question = $this->fetch_cache('tquiz_questions',$record->questionid);
+		$a = new stdClass();
+		$a->date = date("Y-m-d H:i:s",$attempt->timecreated);
+		$a->tquizname = $tquiz->name;
+		$a->username = fullname($user);
+		$a->qname = $question->name;
+		return get_string('responsedetailsheader','tquiz',$a);
+		
+	}
+	
+	public function process_raw_data($formdata){
+		global $DB;
+		
+		//heading data is just qname really
+		$this->headingdata = new stdClass();
+		$this->headingdata->questionid=$formdata->questionid;
+		$this->headingdata->attemptid=$formdata->attemptid;
+		
+		//get all data for this question by user
+		$sql =	"SELECT tal.*
+		FROM {tquiz_attempt_log} tal
+		INNER JOIN {tquiz_attempt} ta ON ta.id = tal.attemptid
+		WHERE tal.attemptid = :talattemptid AND tal.questionid=:talquestionid
+		ORDER BY tal.eventtime";
+		$params=array();
+		$params['talquestionid'] = $formdata->questionid;
+		$params['talattemptid'] = $formdata->attemptid;
+	
+		
+		$alldata = $DB->get_records_sql($sql,$params); 
+		$ret=array();
+		foreach($alldata as $adata){
+			//get event log data into the attempt object
+			switch ($adata->eventkey){
+					case 'startplayanswer':
+						if(array_key_exists($adata->eventvalue,$ret)){
+							$ret[$adata->eventvalue] = $ret[$adata->eventvalue]+1; 
+						}else{
+							$ret[$adata->eventvalue] =1;
+						}
+						break;
+					default:
+						break;
+			}//end of switch
+		}//end of for each
+		
+		$rdata=array();
+		foreach ($ret as $rkey=>$rvalue){
+			$adata = new stdClass();
+			$adata->responsenumber=$rkey;
+			$adata->rplaycount=$rvalue;
+			$rdata[]=$adata;
+		}
+		
+		$this->rawdata= $rdata;
 		return true;
 	}
 

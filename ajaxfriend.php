@@ -72,6 +72,7 @@ if($eventkey=='startquiz'){
 	$attempt->status='current';
 	$attempt->score=0;
 	$attempt->timecreated=$updatetime;
+	$attempt->timefinished=0;
 	$attemptid = $DB->insert_record('tquiz_attempt',$attempt,true);
 	if($attemptid){
 		$attempt->id = $attemptid;

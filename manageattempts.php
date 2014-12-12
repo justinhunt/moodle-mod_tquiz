@@ -32,7 +32,7 @@ global $USER,$DB;
 // first get the nfo passed in to set up the page
 $attemptid = optional_param('attemptid',0 ,PARAM_INT);
 $id     = required_param('id', PARAM_INT);         // Course Module ID
-$action = optional_param('action','view',PARAM_TEXT);
+$action = optional_param('action','confirmdelete',PARAM_TEXT);
 
 // get the objects we need
 $cm = get_coursemodule_from_id('tquiz', $id, 0, false, MUST_EXIST);
@@ -85,6 +85,7 @@ switch($action){
 			}
 		}
 		redirect($redirecturl);
+		return;
 	
 	case 'confirmdeleteall':
 		$renderer = $PAGE->get_renderer('mod_tquiz');
@@ -105,17 +106,9 @@ switch($action){
 			}
 		}
 		redirect($redirecturl);
+		return;
 
 }
 
-//if  we got here we are in view mode
-
-    $PAGE->navbar->add(get_string('view'), new moodle_url('/mod/tquiz/manageattempts.php', array('id'=>$cm->id,'action'=>'view','attemptid'=>$attempt->id)));
-    $PAGE->navbar->add(get_string('viewingattempt', 'tquiz'));
-	$renderer = $PAGE->get_renderer('mod_tquiz');
-	$mode='reports';
-	echo $renderer->header($tquiz, $cm,$mode, null, get_string('view', 'tquiz'));
-	$logs = $DB->get_records('tquiz_attempt_log',array('attemptid'=>$attempt->id));
-	echo $renderer->show_logs_list($logs);
-	echo $renderer->show_attempts_link($cm->id);
-	echo $renderer->footer();
+//we should never get here
+echo "You should not get here";

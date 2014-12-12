@@ -172,8 +172,10 @@ M.mod_tquiz.helper = {
 		var aid=M.mod_tquiz.sm2.sounds[audioid].answerid;
 		//if its a question sound, log and reveal que
 		if(!aid){
+			console.log("loggin question");
 			this.logevent(qid, 'startplayquestion','1');
 		}else{
+			console.log("loggin answer");
 			this.logevent(qid, 'startplayanswer',aid);
 		}
 		

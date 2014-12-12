@@ -109,16 +109,32 @@ $reportrenderer = $PAGE->get_renderer('mod_tquiz','report');
 //From here we actually display the page.
 //this is core renderer stuff
 $mode = "reports";
-
+$extraheader="";
 switch ($showreport){
-	case 'allattempts':
-		$attempts = $DB->get_records('tquiz_attempt',array('tquizid'=>$tquiz->id,'status'=>'current'));
+
+	//not a true report, separate implementation in renderer
+	case 'menu':
+		$questions = $DB->get_records('tquiz_questions',array('tquiz'=>$tquiz->id));
 		echo $renderer->header($tquiz, $cm, $mode, null, get_string('reports', 'tquiz'));
-		echo $renderer->show_attempts_header($tquiz,$cm);
-		echo $renderer->show_attempts_list($attempts,$tquiz,$cm);
+		echo $reportrenderer->render_reportmenu($tquiz,$cm, $questions);
 		// Finish the page
 		echo $renderer->footer();
 		return;
+	
+	case 'attemptlog':
+		$report = new mod_tquiz_attemptlog_report();
+		$formdata = new stdClass();
+		$formdata->attemptid=$attemptid;
+		break;
+		
+	case 'allattempts':
+		$report = new mod_tquiz_allattempts_report();
+		$formdata = new stdClass();
+		$formdata->tquizid=$tquiz->id;
+		$formdata->cmid=$cm->id;
+		$extraheader = $reportrenderer->render_delete_allattempts($cm);
+		break;
+	
 	
 	case 'allusers':
 		$report = new mod_tquiz_allusers_report();
@@ -133,18 +149,17 @@ switch ($showreport){
 		$formdata->tquizid=$tquiz->id;
 		break;
 		
-	case 'menu':
-		$questions = $DB->get_records('tquiz_questions',array('tquiz'=>$tquiz->id));
-		echo $renderer->header($tquiz, $cm, $mode, null, get_string('reports', 'tquiz'));
-		echo $reportrenderer->render_reportmenu($tquiz,$cm, $questions);
-		// Finish the page
-		echo $renderer->footer();
-		return;
-		
 	case 'attempt':
 		$report = new mod_tquiz_attempt_report();
 		$formdata = new stdClass();
 		$formdata->userid=$userid;
+		$formdata->attemptid=$attemptid;
+		break;
+		
+	case 'responsedetails':
+		$report = new mod_tquiz_responsedetails_report();
+		$formdata = new stdClass();
+		$formdata->questionid=$questionid;
 		$formdata->attemptid=$attemptid;
 		break;
 		
@@ -174,6 +189,7 @@ switch($format){
 		
 		$reportrows = $report->fetch_formatted_rows(true);
 		echo $renderer->header($tquiz, $cm, $mode, null, get_string('reports', 'tquiz'));
+		echo $extraheader;
 		echo $reportrenderer->render_section_html($reportheading, $report->fetch_name(), $report->fetch_head(), $reportrows, $report->fetch_fields());
 		echo $reportrenderer->show_reports_footer($tquiz,$cm,$formdata,$showreport);
 		echo $renderer->footer();

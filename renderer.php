@@ -290,13 +290,14 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		return html_writer::table($table);
 
 	}
-	
+	/*
 	function show_attempts_header($tquiz,$cm){
 		global $DB;
 		$ret = $this->output->heading(get_string('showingallattempts','tquiz'), 3, 'main');
 		return $ret;
 		
 	}
+	*/
 	
 	/**
 	 * Return the html table of attempts
@@ -304,6 +305,7 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 	 * @param integer $courseid
 	 * @return string html of table
 	 */
+	 /*
 	function show_attempts_list($attempts,$tquiz,$cm){
 		global $DB;
 		$ret="";
@@ -322,11 +324,12 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		$table->head = array(
 			get_string('starttime', 'tquiz'),
 			get_string('username', 'tquiz'),
+			get_string('status', 'tquiz'),
 			get_string('actions', 'tquiz')
 		);
-		$table->headspan = array(1,1,3);
+		$table->headspan = array(1,1,1,3);
 		$table->colclasses = array(
-			'starttime', 'username','details','logs','delete'
+			'starttime', 'username','status','details','logs','delete'
 		);
 
 		//sort by start date
@@ -335,8 +338,10 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		//loop through the attempts and add to table
 		foreach ($attempts as $attempt) {
 			$row = new html_table_row();
-		
+			//start time cell
 			$starttimecell = new html_table_cell(date("Y-m-d H:i:s",$attempt->timecreated));
+			
+			//fullname cell
 			if(array_key_exists($attempt->userid,$users)){
 				$user = $users[$attempt->userid];
 				$fullname=fullname($user);
@@ -351,23 +356,29 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 			}
 			$usernamecell = new html_table_cell($fullname);
 			
+			//attempt status cell
+			$statuscell =  new html_table_cell($attempt->status);
+			
+			//view attempt report cell
 			$actionurl = '/mod/tquiz/reports.php';
 			$detailsurl = new moodle_url($actionurl, array('id'=>$cm->id,'n'=>$tquiz->id,'report'=>'attempt','userid'=>$user->id,'attemptid'=>$attempt->id));
 			$detailslink = html_writer::link($detailsurl, get_string('viewreport', 'tquiz'));
 			$detailscell = new html_table_cell($detailslink);
 		
+			//manageattempts link ->log
 			$actionurl = '/mod/tquiz/manageattempts.php';
 			$logsurl = new moodle_url($actionurl, array('id'=>$cm->id,'attemptid'=>$attempt->id));
 			$logslink = html_writer::link($logsurl, get_string('logs', 'tquiz'));
 			$logscell = new html_table_cell($logslink);
 
+			//manageattempts link ->delete
 			$actionurl = '/mod/tquiz/manageattempts.php';
 			$deleteurl = new moodle_url($actionurl, array('id'=>$cm->id,'attemptid'=>$attempt->id,'action'=>'confirmdelete'));
 			$deletelink = html_writer::link($deleteurl, get_string('deleteattempt', 'tquiz'));
 			$deletecell = new html_table_cell($deletelink);
 
 			$row->cells = array(
-				$starttimecell, $usernamecell, $detailscell, $logscell, $deletecell
+				$starttimecell, $usernamecell, $statuscell, $detailscell, $logscell, $deletecell
 			);
 			$table->data[] = $row;
 		}
@@ -376,71 +387,12 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 
 	}
 	
-	/**
-	 * Return the html table of logs
-	 * @param array attempt objects
-	 * @return string html of table
-	 */
-	function show_logs_list($logs){
-		global $DB;
-		
-		if(!$logs){
-			return $this->output->heading(get_string('nologs','tquiz'), 3, 'main');
-		}
-	
-		$table = new html_table();
-		$table->id = 'mod_tquiz_logspanel';
-		$table->head = array(
-			get_string('question', 'tquiz'),
-			get_string('eventname', 'tquiz'),
-			get_string('eventvalue', 'tquiz'),
-			get_string('eventtime', 'tquiz'),
-		);
-		$table->headspan = array(1,1,1,1);
-		$table->colclasses = array(
-			'questionid','eventname','eventvalue','eventtime'
-		);
-
-		//sort by start date
-		core_collator::asort_objects_by_property($logs,'timecreated',core_collator::SORT_NUMERIC);
-
-		$qnames = array();
-
-		//loop through the attempts and add to table
-		foreach ($logs as $log) {
-			$row = new html_table_row();
-			if(array_key_exists($log->questionid,$qnames)){
-				$qname = $qnames[$question->id];
-			}else{
-				$question=$DB->get_record('tquiz_questions',array('id'=>$log->questionid));
-				if($question){
-					$qnames[$question->id]=$question->name;
-					$qname=$question->name;
-				}else{
-					$qname='';
-				}
-			}
-			$questionidcell = new html_table_cell($qname);
-			$eventnamecell = new html_table_cell($log->eventkey);
-			$eventvaluecell = new html_table_cell($log->eventvalue);
-			$eventtimecell = new html_table_cell(date("H:i:s",$log->timecreated));
-		
-
-			$row->cells = array(
-				$questionidcell , $eventnamecell, $eventvaluecell, $eventtimecell
-			);
-			$table->data[] = $row;
-		}
-
-		return html_writer::table($table);
-
-	}
-	
 	function show_attempts_link($cmid){
 		// print's a popup link to your custom page
 		$link = new moodle_url('/mod/tquiz/reports.php',array('id'=>$cmid));
 		return  html_writer::link($link, get_string('returntoattemptsmanager','mod_tquiz'));
 	}
+	*/
 	
 	function fetch_preview_link($questionid, $tquizid){
 		// print's a popup link to your custom page
@@ -767,6 +719,14 @@ class mod_tquiz_report_renderer extends plugin_renderer_base {
         break;
 	}
 
+	public function render_delete_allattempts($cm){
+		$deleteallbutton = new single_button(
+				new moodle_url('/mod/tquiz/manageattempts.php',array('id'=>$cm->id,'action'=>'confirmdeleteall')), 
+				get_string('deleteallattempts','tquiz'), 'get');
+		$ret =  html_writer::div( $this->render($deleteallbutton) ,'mod_tquiz_actionbuttons');
+		return $ret;
+	}
+	
 	public function render_section_html($sectiontitle, $report, $head, $rows, $fields) {
 		global $CFG;
 		if(empty($rows)){
