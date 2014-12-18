@@ -45,6 +45,9 @@ define('MOD_TQUIZ_TEXTQUESTION_FILEAREA', 'questionarea');
 define('MOD_TQUIZ_TEXTANSWER_FILEAREA', 'answerarea');
 define('MOD_TQUIZ_CORRECTANSWER','correctanswer');
 define('MOD_TQUIZ_SHUFFLEANSWERS','shuffleanswers');
+define('MOD_TQUIZ_ANSWERSINROW','answersinrow');
+define('MOD_TQUIZ_ANSWERWIDTH','answerwidth');
+define('MOD_TQUIZ_MAXANSWERS',4);
 
 /**
  * Abstract class that question type's inherit from.
@@ -248,6 +251,40 @@ abstract class tquiz_add_question_form_base extends moodleform {
         $this->_form->addElement('radio', MOD_TQUIZ_CORRECTANSWER, $label,'',$count);
         $this->_form->setDefault(MOD_TQUIZ_CORRECTANSWER, 1);
     }
+    
+   	 /**
+     * Convenience function: Adds layout hint. How many answers in a row
+     *
+     * @param string $label, null means default
+     * @return void
+     */
+    protected final function add_answersinrow( $label = null) {
+        if ($label === null) {
+            $label = get_string('answersinrow', 'tquiz');
+        }
+        $buttonoptions = array();
+        for($i=1;$i<=MOD_TQUIZ_MAXANSWERS;$i++){
+        	$buttonoptions[$i]=$i;
+        }
+        $this->_form->addElement('select', MOD_TQUIZ_ANSWERSINROW, $label,$buttonoptions);
+        $this->_form->setDefault(MOD_TQUIZ_ANSWERSINROW, 2);
+        $this->_form->setType(MOD_TQUIZ_ANSWERSINROW, PARAM_INT);
+    }
+    
+     /**
+     * Convenience function: Adds layout hint. Width of a single answer
+     *
+     * @param string $label, null means default
+     * @return void
+     */
+    protected final function add_answerwidth( $label = null) {
+        if ($label === null) {
+            $label = get_string('answerwidth', 'tquiz');
+        }
+        $this->_form->addElement('text', MOD_TQUIZ_ANSWERWIDTH, $label);
+        $this->_form->setDefault(MOD_TQUIZ_ANSWERWIDTH, 0);
+        $this->_form->setType(MOD_TQUIZ_ANSWERWIDTH, PARAM_INT);
+    }
 	
     /**
      * Convenience function: Adds an response editor
@@ -297,11 +334,13 @@ class tquiz_add_question_form_textchoice extends tquiz_add_question_form_base {
 		
 		$this->add_audio_question_upload(get_string('audioquestionfile','tquiz'));
 		$this->add_shuffleanswers();
+		$this->add_answersinrow();
+		$this->add_answerwidth();
 		
-		$maxanswers = 4;
-        for ($i = 1; $i <= $maxanswers; $i++) {
+        for ($i = 1; $i <= MOD_TQUIZ_MAXANSWERS; $i++) {
             $this->_form->addElement('header', 'answertitle'.$i, get_string('answer').' '. $i);
-            $this->add_answer($i, null, true);
+            $required = $i==1;
+            $this->add_answer($i, null, $required);
 			$this->add_correctanswer($i);
 			
            // $this->add_response($i);
@@ -321,11 +360,11 @@ class tquiz_add_question_form_audiochoice extends tquiz_add_question_form_base {
 	
 		$this->add_audio_question_upload(get_string('audioquestionfile','tquiz'));
 		$this->add_shuffleanswers();
-		
-		$maxanswers = 4;
-        for ($i = 1; $i <= $maxanswers; $i++) {
+
+        for ($i = 1; $i <= MOD_TQUIZ_MAXANSWERS; $i++) {
             $this->_form->addElement('header', 'answertitle'.$i, get_string('answer').' '. $i);
-            $this->add_audio_answer_upload($i, null, true);
+            $required = $i==1;
+            $this->add_audio_answer_upload($i, null, $required);
 			$this->add_correctanswer($i);
         }
     }

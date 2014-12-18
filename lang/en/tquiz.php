@@ -141,3 +141,5 @@ $string['viewreport'] = 'view report';
 $string['attemptsmanager'] = 'Attempts Manager';
 $string['responsenumber'] = 'Response Number';
 $string['rplaycount'] = 'Play Count';
+$string['answersinrow'] = 'Answers in 1 row';
+$string['answerwidth'] = 'Answer width';

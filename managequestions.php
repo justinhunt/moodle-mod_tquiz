@@ -129,6 +129,7 @@ $redirecturl = new moodle_url('/mod/tquiz/edit.php', array('id'=>$cm->id));
 $editoroptions = mod_tquiz_fetch_editor_options($course, $context);
 $audiofilemanageroptions = mod_tquiz_fetch_filemanager_options($course,1);
 
+
 //get the mform for our question
 switch($qtype){
 	case MOD_TQUIZ_QTYPE_TEXTCHOICE:
@@ -158,6 +159,7 @@ if ($mform->is_cancelled()) {
 //if we have data, then our job here is to save it and return to the quiz edit page
 if ($data = $mform->get_data()) {
 		require_sesskey();
+		
 		$thequestion = new stdClass;
         $thequestion->tquiz = $tquiz->id;
         $thequestion->id = $data->questionid;
@@ -180,8 +182,7 @@ if ($data = $mform->get_data()) {
 			$thequestion->createdby=$USER->id;
 			switch($data->qtype){
 				case MOD_TQUIZ_QTYPE_TEXTCHOICE:
-					$maxanswers = 4;
-					for($i=1;$i<=$maxanswers;$i++){
+					for($i=1;$i<=MOD_TQUIZ_MAXANSWERS;$i++){
 						$thequestion->{MOD_TQUIZ_TEXTANSWER . $i}='';
 						$thequestion->{MOD_TQUIZ_TEXTANSWER . $i . 'format'}=0;
 					}
@@ -192,7 +193,7 @@ if ($data = $mform->get_data()) {
 					error("Could not insert tquiz question!");
 					redirect($redirecturl);
 			}
-		}
+		}			
 		
 		//handle all the files
 		//save the question text editor files (common to all qtypes)
@@ -205,34 +206,49 @@ if ($data = $mform->get_data()) {
 		file_save_draft_area_files($data->{MOD_TQUIZ_AUDIOQUESTION}, $context->id, 'mod_tquiz', MOD_TQUIZ_AUDIOQUESTION_FILEAREA,
 			   $thequestion->id, $audiofilemanageroptions);
 					
-		//save files dependant on qtype
+		//do things dependant on qtype
 		switch($data->qtype){
 			case MOD_TQUIZ_QTYPE_TEXTCHOICE:
 				
-				// Save answer data
-				$maxanswers = 4;
-				for($i=1;$i<=$maxanswers;$i++){
+				// Save answertext/files data
+				$answercount=0;
+				for($i=1;$i<=MOD_TQUIZ_MAXANSWERS;$i++){
 					//saving files from text editor
 					$data = file_postupdate_standard_editor( $data, MOD_TQUIZ_TEXTANSWER . $i, $editoroptions, $context,
                                         'mod_tquiz', MOD_TQUIZ_TEXTANSWER_FILEAREA.$i, $thequestion->id);
 					$thequestion->{MOD_TQUIZ_TEXTANSWER . $i} = $data->{MOD_TQUIZ_TEXTANSWER . $i} ;
-					$thequestion->{MOD_TQUIZ_TEXTANSWER . $i .'format'} = $data->{MOD_TQUIZ_TEXTANSWER . $i .'format'} ;
-					
+					$thequestion->{MOD_TQUIZ_TEXTANSWER . $i .'format'} = $data->{MOD_TQUIZ_TEXTANSWER . $i .'format'};	
+					if(!$answercount && $thequestion->{MOD_TQUIZ_TEXTANSWER . $i} ==''){
+						$answercount=$i-1;
+					}
 				}
+				
+				//save answer layout data
+				$thequestion->{MOD_TQUIZ_ANSWERSINROW}=$data->{MOD_TQUIZ_ANSWERSINROW};
+				$thequestion->{MOD_TQUIZ_ANSWERWIDTH}=$data->{MOD_TQUIZ_ANSWERWIDTH};
+				$thequestion->answercount=$answercount;
 				break;
+				
 			case MOD_TQUIZ_QTYPE_AUDIOCHOICE:
 				// Save answer data
-				$maxanswers = 4;
-				for($i=1;$i<=$maxanswers;$i++){
+				for($i=1;$i<=MOD_TQUIZ_MAXANSWERS;$i++){
 					file_save_draft_area_files($data->{MOD_TQUIZ_AUDIOANSWER . $i}, $context->id, 'mod_tquiz', MOD_TQUIZ_AUDIOANSWER_FILEAREA . $i,
 					   $thequestion->id, $audiofilemanageroptions);
 				}
+				
+				//save answer layout data. We ignore this here
+				$thequestion->{MOD_TQUIZ_ANSWERSINROW}=0;
+				$thequestion->{MOD_TQUIZ_ANSWERWIDTH}=0;
+				//its hard to tell from here how many audio files were added. 
+				$thequestion->answercount=MOD_TQUIZ_MAXANSWERS;
+				//$thequestion->answercount=$answercount;			
 				break;
 										
 			default:
 				break;
 		
 		}
+
 		
 		//now update the db once we have saved files and stuff
 		if (!$DB->update_record("tquiz_questions",$thequestion)){
@@ -271,11 +287,9 @@ if ($edit) {
 	
 	//Set up the question type specific parts of the form data
 	switch($qtype){
-		case MOD_TQUIZ_QTYPE_TEXTCHOICE:
-			
+		case MOD_TQUIZ_QTYPE_TEXTCHOICE:			
 			//prepare answer areas
-			$maxanswers = 4;
-			for($i=1;$i<=$maxanswers;$i++){
+			for($i=1;$i<=MOD_TQUIZ_MAXANSWERS;$i++){
 				//text editor
 				$data = file_prepare_standard_editor($data, MOD_TQUIZ_TEXTANSWER . $i, $editoroptions, $context, 'mod_tquiz', MOD_TQUIZ_TEXTANSWER_FILEAREA . $i,  $data->questionid);
 			}
@@ -284,8 +298,7 @@ if ($edit) {
 		case MOD_TQUIZ_QTYPE_AUDIOCHOICE:
 			
 			//prepare answer areas
-			$maxanswers = 4;
-			for($i=1;$i<=$maxanswers;$i++){
+			for($i=1;$i<=MOD_TQUIZ_MAXANSWERS;$i++){
 				//audio editor
 				$draftitemid = file_get_submitted_draft_itemid(MOD_TQUIZ_AUDIOANSWER . $i);
 				file_prepare_draft_area($draftitemid, $context->id, 'mod_tquiz', MOD_TQUIZ_AUDIOANSWER_FILEAREA . $i, $data->questionid,

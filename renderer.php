@@ -508,7 +508,10 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 	$bigbuttoncontainer = $this->fetch_bigbutton('text');
 	$bigbuttontemplate = html_writer::tag('div',$bigbuttoncontainer);
 				
-			$aindexes = array(1,2,3,4);
+			$aindexes = array();
+			for ($i=1;$i<=$thequestion->answercount;$i++){
+				$aindexes[]=$i;
+			}
 			$answers = array();
 			foreach($aindexes as $aindex){
 				switch($thequestion->qtype){
