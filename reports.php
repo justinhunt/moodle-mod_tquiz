@@ -81,10 +81,6 @@ $PAGE->set_pagelayout('course');
 
 	//Get an admin settings 
 	$config = get_config('mod_tquiz');
-  	$someadminsetting = $config->someadminsetting;
-
-	//Get an instance setting
-	$someinstancesetting = $tquiz->someinstancesetting;
 
 
 //get our javascript all ready to go

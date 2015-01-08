@@ -66,6 +66,12 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 				'id'=>'mod_tquiz_@@ID@@_button','onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));	
 				break;
 				
+			case 'textanswer':
+				$bigbuttonhtml = html_writer::tag('button','@@CAPTION@@',  
+				array('class'=>'mod_tquiz_bigbutton yui3-button mod_tquiz_@@SIZECLASS@@_button',
+				'id'=>'mod_tquiz_@@ID@@_button','onclick'=>'M.mod_tquiz.helper.@@ONCLICK@@'));	
+				break;
+				
 			case 'submit':
 				$bigbuttonhtml = html_writer::tag('button','@@CAPTION@@',  
 				array('class'=>'mod_tquiz_bigbutton yui3-button yui3-button-disabled mod_tquiz_@@SIZECLASS@@_button',
@@ -516,13 +522,21 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 			foreach($aindexes as $aindex){
 				switch($thequestion->qtype){
 					case MOD_TQUIZ_QTYPE_TEXTCHOICE:
+						switch($thequestion->answerwidth){
+							case 0: $sizeclass="shorttextanswer";break;
+							case 1: $sizeclass="mediumtextanswer";break;
+							case 2: $sizeclass="longtextanswer";break;
+							default:
+								$sizeclass="shorttextanswer";
+						}
 						$theanswer = str_replace('@@CAPTION@@',$thequestion->{'answertext' . $aindex},$bigbuttontemplate);
 						$theanswer  = str_replace('@@ID@@','textanswerbutton_' . $thequestion->id . '_' . $aindex,$theanswer);
 						$theanswer = str_replace('@@ONCLICK@@','text_answer_click(' . $thequestion->id . ',' . $aindex . ')',$theanswer);
 						$theanswer = str_replace('@@ANSWERINDEX@@','answer' . $aindex . '_',$theanswer);
-						$theanswer = str_replace('@@SIZECLASS@@','shorttextanswer',$theanswer);
+						$theanswer = str_replace('@@SIZECLASS@@',$sizeclass,$theanswer);
 						$answers[] =$theanswer;
 						break;
+						
 					case MOD_TQUIZ_QTYPE_AUDIOCHOICE:
 						//get question audio div (not so easy)			
 						$fs = get_file_storage();

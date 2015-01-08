@@ -31,8 +31,24 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-/** example constant */
-//define('tquiz_ULTIMATE_ANSWER', 42);
+define('MOD_TQUIZ_NONE', 0);
+define('MOD_TQUIZ_QTYPE_TEXTCHOICE', 1);
+define('MOD_TQUIZ_QTYPE_AUDIOCHOICE', 2);
+define('MOD_TQUIZ_TEXTCHOICE', 'textchoice');
+define('MOD_TQUIZ_AUDIOQUESTION', 'audioquestion');
+define('MOD_TQUIZ_AUDIOANSWER', 'audioanswer');
+define('MOD_TQUIZ_AUDIOQUESTION_FILEAREA', 'audioquestion');
+define('MOD_TQUIZ_AUDIOANSWER_FILEAREA', 'audioanswer');
+define('MOD_TQUIZ_TEXTQUESTION', 'questiontext');
+define('MOD_TQUIZ_TEXTANSWER', 'answertext');
+define('MOD_TQUIZ_TEXTQUESTION_FILEAREA', 'questionarea');
+define('MOD_TQUIZ_TEXTANSWER_FILEAREA', 'answerarea');
+define('MOD_TQUIZ_CORRECTANSWER','correctanswer');
+define('MOD_TQUIZ_SHUFFLEANSWERS','shuffleanswers');
+define('MOD_TQUIZ_ANSWERSINROW','answersinrow');
+define('MOD_TQUIZ_ANSWERWIDTH','answerwidth');
+define('MOD_TQUIZ_MAXANSWERS',4);
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Moodle core API                                                            //
@@ -61,6 +77,7 @@ function tquiz_supports($feature) {
     switch($feature) {
         case FEATURE_MOD_INTRO:         return true;
         case FEATURE_SHOW_DESCRIPTION:  return true;
+		case FEATURE_BACKUP_MOODLE2:    return true;
 
         default:                        return null;
     }

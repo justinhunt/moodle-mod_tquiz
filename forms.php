@@ -30,24 +30,7 @@
 
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/course/lib.php');
-
-define('MOD_TQUIZ_NONE', 0);
-define('MOD_TQUIZ_QTYPE_TEXTCHOICE', 1);
-define('MOD_TQUIZ_QTYPE_AUDIOCHOICE', 2);
-define('MOD_TQUIZ_TEXTCHOICE', 'textchoice');
-define('MOD_TQUIZ_AUDIOQUESTION', 'audioquestion');
-define('MOD_TQUIZ_AUDIOANSWER', 'audioanswer');
-define('MOD_TQUIZ_AUDIOQUESTION_FILEAREA', 'audioquestion');
-define('MOD_TQUIZ_AUDIOANSWER_FILEAREA', 'audioanswer');
-define('MOD_TQUIZ_TEXTQUESTION', 'questiontext');
-define('MOD_TQUIZ_TEXTANSWER', 'answertext');
-define('MOD_TQUIZ_TEXTQUESTION_FILEAREA', 'questionarea');
-define('MOD_TQUIZ_TEXTANSWER_FILEAREA', 'answerarea');
-define('MOD_TQUIZ_CORRECTANSWER','correctanswer');
-define('MOD_TQUIZ_SHUFFLEANSWERS','shuffleanswers');
-define('MOD_TQUIZ_ANSWERSINROW','answersinrow');
-define('MOD_TQUIZ_ANSWERWIDTH','answerwidth');
-define('MOD_TQUIZ_MAXANSWERS',4);
+require_once($CFG->dirroot . '/mod/tquiz/lib.php');
 
 /**
  * Abstract class that question type's inherit from.
@@ -259,6 +242,11 @@ abstract class tquiz_add_question_form_base extends moodleform {
      * @return void
      */
     protected final function add_answersinrow( $label = null) {
+	
+		$this->_form->addElement('hidden', MOD_TQUIZ_ANSWERSINROW,0);
+        $this->_form->setType(MOD_TQUIZ_ANSWERSINROW, PARAM_INT);
+		return;
+		/*
         if ($label === null) {
             $label = get_string('answersinrow', 'tquiz');
         }
@@ -269,6 +257,7 @@ abstract class tquiz_add_question_form_base extends moodleform {
         $this->_form->addElement('select', MOD_TQUIZ_ANSWERSINROW, $label,$buttonoptions);
         $this->_form->setDefault(MOD_TQUIZ_ANSWERSINROW, 2);
         $this->_form->setType(MOD_TQUIZ_ANSWERSINROW, PARAM_INT);
+		*/
     }
     
      /**
@@ -281,7 +270,11 @@ abstract class tquiz_add_question_form_base extends moodleform {
         if ($label === null) {
             $label = get_string('answerwidth', 'tquiz');
         }
-        $this->_form->addElement('text', MOD_TQUIZ_ANSWERWIDTH, $label);
+		$buttonoptions = array();
+		$buttonoptions['0']=get_string('shorttextanswer','tquiz');
+		$buttonoptions['1']=get_string('mediumtextanswer','tquiz');
+		$buttonoptions['2']=get_string('longtextanswer','tquiz');
+        $this->_form->addElement('select', MOD_TQUIZ_ANSWERWIDTH, $label,$buttonoptions);
         $this->_form->setDefault(MOD_TQUIZ_ANSWERWIDTH, 0);
         $this->_form->setType(MOD_TQUIZ_ANSWERWIDTH, PARAM_INT);
     }

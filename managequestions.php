@@ -218,8 +218,8 @@ if ($data = $mform->get_data()) {
                                         'mod_tquiz', MOD_TQUIZ_TEXTANSWER_FILEAREA.$i, $thequestion->id);
 					$thequestion->{MOD_TQUIZ_TEXTANSWER . $i} = $data->{MOD_TQUIZ_TEXTANSWER . $i} ;
 					$thequestion->{MOD_TQUIZ_TEXTANSWER . $i .'format'} = $data->{MOD_TQUIZ_TEXTANSWER . $i .'format'};	
-					if(!$answercount && $thequestion->{MOD_TQUIZ_TEXTANSWER . $i} ==''){
-						$answercount=$i-1;
+					if(trim($thequestion->{MOD_TQUIZ_TEXTANSWER . $i}) !=''){
+						$answercount=$i;
 					}
 				}
 				
