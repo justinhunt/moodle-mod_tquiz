@@ -335,6 +335,7 @@ class tquiz_add_question_form_textchoice extends tquiz_add_question_form_base {
             $required = $i==1;
             $this->add_answer($i, null, $required);
 			$this->add_correctanswer($i);
+			$this->_form->setExpanded('answertitle'.$i);
 			
            // $this->add_response($i);
            // $this->add_score($i, null, ($i===0)?1:0);
@@ -359,6 +360,7 @@ class tquiz_add_question_form_audiochoice extends tquiz_add_question_form_base {
             $required = $i==1;
             $this->add_audio_answer_upload($i, null, $required);
 			$this->add_correctanswer($i);
+			$this->_form->setExpanded('answertitle'.$i);
         }
     }
 }
