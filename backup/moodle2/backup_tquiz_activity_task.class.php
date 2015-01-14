@@ -59,11 +59,11 @@ class backup_tquiz_activity_task extends backup_activity_task {
 
         // Link to the list of tquizs
         $search = "/(" . $base . "\/mod\/tquiz\/index.php\?id\=)([0-9]+)/";
-        $content = preg_replace($search, '$@tquizINDEX*$2@$', $content);
+        $content = preg_replace($search, '$@TQUIZINDEX*$2@$', $content);
 
         //Link to tquiz view by moduleid
         $search = "/(" . $base . "\/mod\/tquiz\/view.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@tquizVIEWBYID*$2@$', $content);
+        $content= preg_replace($search, '$@QUIZVIEWBYID*$2@$', $content);
 
         return $content;
     }

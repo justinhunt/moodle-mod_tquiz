@@ -98,6 +98,9 @@ class restore_tquiz_activity_structure_step extends restore_activity_structure_s
 
         $data = (object)$data;
         $oldid = $data->id;
+		
+		$data->timemodified = $this->apply_date_offset($data->timemodified);
+        $data->timecreated = $this->apply_date_offset($data->timecreated);
 
         $data->tquiz = $this->get_new_parentid('tquiz');
         $newitemid = $DB->insert_record('tquiz_questions', $data);
@@ -109,6 +112,9 @@ class restore_tquiz_activity_structure_step extends restore_activity_structure_s
 
         $data = (object)$data;
         $oldid = $data->id;
+		
+		$data->timefinished = $this->apply_date_offset($data->timefinished);
+        $data->timecreated = $this->apply_date_offset($data->timecreated);
 
         $data->tquizid = $this->get_new_parentid('tquiz');
         $newitemid = $DB->insert_record('tquiz_attempt', $data);
@@ -120,6 +126,8 @@ class restore_tquiz_activity_structure_step extends restore_activity_structure_s
 
         $data = (object)$data;
         $oldid = $data->id;
+
+        $data->timecreated = $this->apply_date_offset($data->timecreated);
 
         $data->tquizid = $this->get_new_parentid('tquiz');
 		//$data->attemptid = $this->get_new_parentid('tquiz_attempt');
