@@ -100,6 +100,30 @@ function xmldb_tquiz_upgrade($oldversion) {
         // Another save point reached
         upgrade_mod_savepoint(true, 2014111902, 'tquiz');
     }
+    if($oldversion < 2015013001){
+    	 // Define field answercount to be added to tquiz
+        $table = new xmldb_table('tquiz_questions');
+        $field = new xmldb_field('answercount', XMLDB_TYPE_INTEGER, 2, XMLDB_UNSIGNED, null, null, null);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+         // Add field answersinrow
+         $field = new xmldb_field('answersinrow', XMLDB_TYPE_INTEGER, 2, XMLDB_UNSIGNED, null, null, null);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+         // Add field answerwidth
+         $field = new xmldb_field('answerwidth', XMLDB_TYPE_INTEGER, 2, XMLDB_UNSIGNED, null, null, null);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        // Another save point reached
+        upgrade_mod_savepoint(true, 2015013001, 'tquiz');
+    
+    }
 
     return true;
 }
