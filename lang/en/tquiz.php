@@ -123,6 +123,7 @@ $string['responsedetailsheader'] = '{$a->tquizname} {$a->qname} response details
 $string['questiondetails'] = 'Question Details: {$a}'; 
 $string['questionsummary'] = 'Question Summary: {$a}'; 
 $string['allattempts'] = 'All Attempts';
+$string['nomoreattempts'] = 'You can only attempt this quiz {$a} time(s). Contact your teacher if you wish to try again.';
 $string['allusers'] = 'All Users';
 $string['allsummary'] = 'TQuiz Summary';
 $string['details'] = 'details';

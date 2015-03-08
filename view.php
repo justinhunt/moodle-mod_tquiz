@@ -159,6 +159,16 @@ if($mode=='preview'){
 	echo $renderer->notabsheader();
 }
 
+//if we are aout of attempts cancel
+if($mode!='preview' && $tquiz->attemptsallowed >0){
+	$attemptcount = $DB->count_records('tquiz_attempt',array('tquizid'=>$tquiz->id,'userid'=>$USER->id));
+	if($attemptcount >= $tquiz->attemptsallowed){
+		echo $renderer->no_more_attempts($tquiz,$cm);
+		echo $renderer->footer();
+		return;
+	}
+}
+
 echo $renderer->fetch_intro($tquiz,$cm);
 echo $questiondivs;
 echo $renderer->fetch_feedback($tquiz,$cm,$modulecontext);

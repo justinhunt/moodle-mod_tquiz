@@ -76,8 +76,8 @@ class mod_tquiz_mod_form extends moodleform_mod {
          $mform->addElement('duration', 'timelimit', get_string('timelimit', 'tquiz')); 
 		 $mform->addElement('selectyesno', 'shufflequestions', get_string('shufflequestions', 'tquiz'));
 
-		//
-        $mform->addElement('select', 'attemptsallowed', get_string('attemptsallowed', 'tquiz'), array('size'=>'5'));
+		$options =array(0=>get_string('unlimited'),1=>1,2=>2,3=>3,4=>4,5=>5);
+        $mform->addElement('select', 'attemptsallowed', get_string('attemptsallowed', 'tquiz'), $options,array('size'=>'1'));
         $mform->setType('attemptsallowed', PARAM_INT);
 		$mform->setDefault('attemptsallowed', '1');
         $mform->addRule('attemptsallowed', null, 'required', null, 'client');

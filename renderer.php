@@ -125,6 +125,22 @@ class mod_tquiz_renderer extends plugin_renderer_base {
 		 /**
      *
      */
+	public function no_more_attempts($tquiz, $cm){
+		$ret = "";
+		if (trim(strip_tags($tquiz->intro))) {
+			$ret .= $this->output->box_start('mod_introbox');
+			$ret .= format_module_intro('tquiz', $tquiz, $cm->id);
+			$ret .= $this->output->box_end();
+		}
+			
+		$ret .=  $this->output->heading(get_string("nomoreattempts", "tquiz", $tquiz->attemptsallowed), 3);
+		
+		return html_writer::tag('div', $ret, array('class'=>'mod_tquiz_intro','id'=>'tquiz_intro_div'));
+	}
+	
+		 /**
+     *
+     */
 	public function fetch_feedback($tquiz,$cm, $context){
 		$ret = "";
 		if (trim(strip_tags($tquiz->feedback))) {
