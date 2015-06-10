@@ -358,7 +358,7 @@ M.mod_tquiz.sm2 = {
 		  preferFlash: false,
 		  onready: function() {
 			//console.log('soundmanager ready');
-			if(!m_mod_tquiz_sm2_sounds){return;}
+			if(typeof m_mod_tquiz_sm2_sounds == 'undefined'){return;}
 			M.mod_tquiz.sm2.Y.Array.each(m_mod_tquiz_sm2_sounds, function(sound) {  	
 				//console.log('doing sound');
 				//console.log('soundid:' + sound.id);
