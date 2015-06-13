@@ -59,8 +59,12 @@ class mod_tquiz_mod_form extends moodleform_mod {
         $mform->addHelpButton('name', 'tquizname', 'tquiz');
 
         // Adding the standard "intro" and "introformat" fields
-        $this->add_intro_editor();
-
+          // Adding the standard "intro" and "introformat" fields
+        if($CFG->version < 2015051100){
+        	$this->add_intro_editor();
+        }else{
+        	$this->standard_intro_elements();
+		}
 		
 		//Add a feedback form
 		$edfield = 'feedback';
