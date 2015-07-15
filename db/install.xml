@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="tquiz" COMMENT="Default comment for tquiz, please edit me">
+    <TABLE NAME="tquiz" COMMENT="Default comment for tquiz">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course tquiz activity belongs to"/>
@@ -44,7 +44,7 @@
         <FIELD NAME="answertext3format" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="answertext4" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="answertext4format" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="correcttanswer" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="correctanswer" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="shuffleanswers" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
         <FIELD NAME="answercount" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="answersinrow" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false"/>
