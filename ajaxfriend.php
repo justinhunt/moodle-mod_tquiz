@@ -101,11 +101,11 @@ if($attempt && $attempt->status=='current'){
 	
 	//if the quiz is finishing tidy up
 	//or if we finished it before the last anwer came in (ajax race condition)
-	if($eventkey=='finishquiz' || ($attempt->timefinished>0 && $eventkey=='SELECTANSWER')){
+	if($eventkey=='finishquiz' || ($attempt->timefinished>0 && strtoupper($eventkey)=='SELECTANSWER')){
 	$sql =	"SELECT COUNT(*)
 		FROM {tquiz_attempt_log} tal
 		INNER JOIN {tquiz_questions} tq ON tal.questionid = tq.id
-		WHERE tal.attemptid = :talattemptid AND tq.correctanswer=tal.eventvalue AND tal.eventkey='SELECTANSWER'";
+		WHERE tal.attemptid = :talattemptid AND tq.correctanswer=tal.eventvalue AND tal.eventkey='selectanswer'";
 		$params=array();
 		$params['talattemptid'] = $attempt->id;
 		$score = $DB->count_records_sql($sql,$params);
