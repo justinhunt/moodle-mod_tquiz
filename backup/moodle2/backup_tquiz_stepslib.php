@@ -29,13 +29,13 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/tquiz/lib.php');
 
 /**
- * Defines the complete webquest structure for backup, with file and id annotations
+ * Defines the complete tquiz structure for backup, with file and id annotations
  *
  */
 class backup_tquiz_activity_structure_step extends backup_activity_structure_step {
 
     /**
-     * Defines the structure of the 'tquiz' element inside the webquest.xml file
+     * Defines the structure of the 'tquiz' element inside the tquiz.xml file
      *
      * @return backup_nested_element
      */
