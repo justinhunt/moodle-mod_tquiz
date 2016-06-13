@@ -406,6 +406,7 @@ class mod_tquiz_questiondetails_report extends  mod_tquiz_base_report {
 	
 		
 		$alldata = $DB->get_records_sql($sql,$params); 
+		$attemptdata=array();
 		$currentuserid=-1;
 		$theattempt=null;
 		foreach($alldata as $adata){
