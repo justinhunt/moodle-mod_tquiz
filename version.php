@@ -29,10 +29,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   =  2016061300;               // If version == 0 then module will not be installed
+$plugin->version   =  2016090201;               // If version == 0 then module will not be installed
 //$plugin->version   = 2010032200;      // The current module version (Date: YYYYMMDDXX)
 $plugin->requires  = 2010031900;      // Requires this Moodle version
 $plugin->cron      = 0;               // Period for cron to check this module (secs)
 $plugin->component = 'mod_tquiz'; // To check on upgrade, that module sits in correct place
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.0.1(Build 2016061300)';
+$plugin->release   = '1.0.2(Build 2016090201)';
